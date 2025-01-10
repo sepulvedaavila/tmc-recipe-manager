@@ -5,3 +5,7 @@
 * _User Account Section_ : Users can view and manage their account details.
 
 The app features a modern, responsive design with an intuitive sidebar menu for seamless navigation between pages. It offers a clean and user-friendly interface tailored for ease of use and a visually appealing experience.
+
+## Useful commands:
+- *npm start*: Starts the react server (frontend)
+- *node server.js*: Initializes the node server and routes the needed functions (backend)
