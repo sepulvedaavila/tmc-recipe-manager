@@ -1,9 +1,19 @@
+import mysql from 'mysql2/promise';
+
+const dbConfig = {
+    host: 'localhost',
+    user: 'tmc-app-user',
+    password: 'hYdmyj-qohcab-1povvu',
+    database: 'recipe_plan'
+};
+
 const handler = async (req, res) => {
     if (req.method === 'POST') {
         const receta = req.body;
-
+        console.log('Receta:', receta.titulo);
         try {
             const connection = await mysql.createConnection(dbConfig);
+
             const [result] = await connection.execute(
                 'INSERT INTO recetas (nombre, fuente, tipo_platillo, racion, descripcion, tags) VALUES (?, ?, ?, ?, ?, ?)',
                 [receta.titulo, receta.fuente, receta.tipoPlatillo, receta.racion, receta.descripcion, receta.tags]
@@ -29,7 +39,7 @@ const handler = async (req, res) => {
     } else if (req.method === 'GET') {
         try {
             const connection = await mysql.createConnection(dbConfig);
-            const [rows] = await connection.execute('SELECT * FROM Recetas');
+            const [rows] = await connection.execute('SELECT nombre FROM Recetas;');
             await connection.end();
 
             res.status(200).json(rows);

@@ -1,12 +1,12 @@
-// Boilerplate React Project Code
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Route, Routes, Link, NavLink } from 'react-router-dom';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import './styles/form.css';
+//import './styles.css'; // Import the new styles
 import NuevaRecetaForm from './components/NuevaRecetaForm';
 import NuevoPlanForm from './components/NuevoPlanForm';
-import Recipes from './components/Recetas';
-import Plans from './components/Planes';
+import Recetas from './components/Recetas';
+import Planes from './components/Planes';
 import Sidebar from './components/Sidebar';
 import Cuenta from './components/Cuenta';
 
@@ -19,12 +19,13 @@ function App() {
         </header>
         <Sidebar />
         <div className="content">
+
           <main>
             <Routes>
               <Route path="/nueva-receta" element={<NuevaRecetaForm />} />
               <Route path="/nuevo-plan" element={<NuevoPlanForm />} />
-              <Route path="/recipes" element={<Recipes />} />
-              <Route path="/plans" element={<Plans />} />
+              <Route path="/recetas" element={<Recetas />} />
+              <Route path="/plans" element={<Planes />} />
               <Route path="/mi-cuenta" element={<Cuenta />} />
             </Routes>
           </main>

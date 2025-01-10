@@ -1,7 +1,5 @@
-// FILE: Sidebar.js
-
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 const Sidebar = () => {
     return (

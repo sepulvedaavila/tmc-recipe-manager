@@ -1,13 +1,4 @@
-// FILE: api/planes.js
-
 import mysql from 'mysql2/promise';
-
-const dbConfig = {
-    host: 'localhost',
-    user: 'tmc-app-user',
-    password: 'hYdmyj-qohcab-1povvu',
-    database: 'recipe_plan',
-};
 
 const handler = async (req, res) => {
     if (req.method === 'POST') {
@@ -39,7 +30,7 @@ const handler = async (req, res) => {
     } else if (req.method === 'GET') {
         try {
             const connection = await mysql.createConnection(dbConfig);
-            const [rows] = await connection.execute('SELECT * FROM planes');
+            const [rows] = await connection.execute('SELECT nombre_plan FROM Planes:');
             await connection.end();
 
             res.status(200).json(rows);

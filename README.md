@@ -1,4 +1,7 @@
-# This project is a Recipe and Meal Planning Management System, designed to help users efficiently organize and manage recipes and weekly meal plans. It provides the following functionality:
+# The Menu Company
+
+## Recipe and Meal Plan Management
+This project is a Recipe and Meal Planning Management System, designed to help users efficiently organize and manage recipes and weekly meal plans. It provides the following functionality:
 
 * _Recipe Management_: Users can create, edit, and save recipes with details such as ingredients, portions, and tags for categorization.
 * _Meal Planning_: Users can plan meals for specific days of the week, assigning dishes like soup, main course, and sides, while considering the number of servings.
