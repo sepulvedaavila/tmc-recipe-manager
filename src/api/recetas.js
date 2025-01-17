@@ -7,6 +7,13 @@ const dbConfig = {
     database: 'recipe_plan'
 };
 
+const validatePorPersona = (cantidad, racion) => {
+    if (racion <= 0) {
+        throw new Error('Racion must be greater than zero');
+    }
+    return cantidad / racion;
+};
+
 const handler = async (req, res) => {
     if (req.method === 'POST') {
         const receta = req.body;
@@ -22,7 +29,7 @@ const handler = async (req, res) => {
             const recetaId = result.insertId;
 
             for (const ingrediente of receta.ingredientes) {
-                const por_persona = ingrediente.cantidad / receta.racion;
+                const por_persona = validatePorPersona(ingrediente.cantidad, receta.racion);
                 await connection.execute(
                     'INSERT INTO Ingredientes (id_receta, ingrediente, unidad, por_persona, cantidad_total) VALUES (?, ?, ?, ?, ?)',
                     [recetaId, ingrediente.ingrediente, ingrediente.unidad, por_persona, ingrediente.cantidad]
@@ -36,20 +43,9 @@ const handler = async (req, res) => {
             console.error('Error saving recipe:', error);
             res.status(500).json({ message: 'Error saving recipe' });
         }
-    } else if (req.method === 'GET') {
-        try {
-            const connection = await mysql.createConnection(dbConfig);
-            const [rows] = await connection.execute('SELECT nombre FROM Recetas;');
-            await connection.end();
-
-            res.status(200).json(rows);
-        } catch (error) {
-            console.error('Error fetching recipes:', error);
-            res.status(500).json({ message: 'Error fetching recipes' });
-        }
     } else {
         res.status(405).json({ message: 'Method not allowed' });
     }
 };
 
-export default handler;
+export default handler; 

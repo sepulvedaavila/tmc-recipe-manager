@@ -1,16 +1,15 @@
-// FILE: Planes.js
-
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-const Plans = () => {
+const Planes = () => {
   const [plans, setPlans] = useState([]);
 
   useEffect(() => {
     const fetchPlans = async () => {
-      const response = await fetch('/api/planes');
+      const response = await fetch('./api/plans');
       const data = await response.json();
-      setPlans(data);
+      console.log(data);
+      //setPlans(data);
     };
 
     fetchPlans();
@@ -31,4 +30,4 @@ const Plans = () => {
   );
 };
 
-export default Plans;
+export default Planes;

@@ -2,13 +2,13 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import './styles/form.css';
-//import './styles.css'; // Import the new styles
 import NuevaRecetaForm from './components/NuevaRecetaForm';
 import NuevoPlanForm from './components/NuevoPlanForm';
 import Recetas from './components/Recetas';
 import Planes from './components/Planes';
 import Sidebar from './components/Sidebar';
 import Cuenta from './components/Cuenta';
+import RecipeCard from './components/recipeCard';
 
 function App() {
   return (
@@ -25,7 +25,7 @@ function App() {
               <Route path="/nueva-receta" element={<NuevaRecetaForm />} />
               <Route path="/nuevo-plan" element={<NuevoPlanForm />} />
               <Route path="/recetas" element={<Recetas />} />
-              <Route path="/plans" element={<Planes />} />
+              <Route path="/planes" element={<Planes />} />
               <Route path="/mi-cuenta" element={<Cuenta />} />
             </Routes>
           </main>

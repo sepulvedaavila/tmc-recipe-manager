@@ -14,13 +14,25 @@ function NuevaRecetaForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const response = await fetch('./api/recetas', {
+        const response = await fetch('./api/recipes', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData),
         });
+        //console.log(response);
         if (response.ok) {
             alert('Recipe saved successfully!');
+            setFormData({
+                titulo: '',
+                fuente: '',
+                tipoPlatillo: '',
+                racion: 1,
+                ingredientes: [{ ingrediente: '', unidad: '', cantidad: 0 }],
+                descripcion: '',
+                tags: '',
+            });
+        } else {
+            alert("Error al guardar la receta");
         }
     };
 

@@ -1,30 +1,49 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import RecipeCard from './recipeCard';
+
 
 const Recipes = () => {
   const [recipes, setRecipes] = useState([]);
+  const [loading, setLoading] = useState(true);
+
 
   useEffect(() => {
     const fetchRecipes = async () => {
-      const response = await fetch('/api/recetas');
-      const data = await response.json();
-      setRecipes(data);
+      try {
+        const response = await fetch('./api/recipes');
+        if (!response.ok) throw new Error('Failed to fetch recipes');
+        const data = await response.json();
+
+        const recipesArray = data.recipeResult.map((recipe) => {
+          return { id: recipe.id, nombre: recipe.nombre, descripcion: recipe.descripcion, racion: recipe.racion, tags: recipe.tags };
+        });
+        console.log(recipesArray);
+        setRecipes(recipesArray);
+      } catch (error) {
+        console.error('Error fetching recipes:', error);
+      } finally {
+        setLoading(false);
+      }
+
     };
 
     fetchRecipes();
   }, []);
 
+  if (loading) return <div className="loading">Loading recipes...</div>;
+
   return (
     <div>
-      <h2>Recipes</h2>
+      <h2>Recetas</h2>
       <Link to="/nueva-receta">
         <button className="primary-button">Nueva Receta</button>
       </Link>
-      <ul>
+      <div className="recipe-list">
         {recipes.map((recipe) => (
-          <li key={recipe.id}>{recipe.nombre}</li>
+          <RecipeCard key={recipe.id} recipe={recipe} />
         ))}
-      </ul>
+      </div>
     </div>
   );
 };
