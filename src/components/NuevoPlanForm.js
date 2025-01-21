@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 
-
 function NuevoPlanForm() {
     const [planData, setPlanData] = useState({
         nombre: '',
@@ -20,8 +19,17 @@ function NuevoPlanForm() {
         const fetchRecipes = async () => {
             try {
                 const response = await fetch('./api/recipes');
-                const data = await response.json();
-                setRecipes(data);
+                if (!response.ok) throw new Error('Failed to fetch recipes');
+                const dataRecipes = await response.json();
+
+                const recipesArray = dataRecipes.recipeResult.map((recipe) => {
+                    return {
+                        id: recipe.id, nombre: recipe.nombre, descripcion: recipe.descripcion,
+                        racion: recipe.racion, tags: recipe.tags, tipo: recipe.tipo_platillo
+                    };
+                });
+                setRecipes(recipesArray);
+
             } catch (error) {
                 console.error('Error fetching recipes:', error);
             }
@@ -48,24 +56,6 @@ function NuevoPlanForm() {
             updatedComidas[day][tipo] = value;
             return { ...prev, comidas: updatedComidas };
         });
-    };
-
-    const handleRecetaChange = (index, field, value) => {
-        const updatedRecetas = [...planData.recetas];
-        updatedRecetas[index][field] = value;
-        setPlanData({ ...planData, recetas: updatedRecetas });
-    };
-
-    const handleAddReceta = () => {
-        setPlanData({
-            ...planData,
-            recetas: [...planData.recetas, { recetaId: '', nombre: '' }],
-        });
-    };
-
-    const handleRemoveReceta = (index) => {
-        const updatedRecetas = planData.recetas.filter((_, i) => i !== index);
-        setPlanData({ ...planData, recetas: updatedRecetas });
     };
 
     const handleSubmit = async (e) => {
@@ -112,9 +102,9 @@ function NuevoPlanForm() {
                 />
             </div>
             <div>
-            <label>Ración:<input type="number" value={planData.racion} onChange={(e) => setPlanData({ ...planData, racion: e.target.value })} /></label>
+                <label>Ración:<input type="number" value={planData.racion} onChange={(e) => setPlanData({ ...planData, racion: e.target.value })} /></label>
             </div>
-            
+
 
             <h3>Días de la Semana</h3>
             <div className="days-checkbox-group">
@@ -134,9 +124,59 @@ function NuevoPlanForm() {
             {planData.dias.map((day) => (
                 <div key={day} className="meal-day">
                     <h4>{day}</h4>
-                    <label>Sopa:<input type="text" onChange={(e) => handleComidaChange(day, 'Sopa', e.target.value)} /></label>
-                    <label>Plato Fuerte:<input type="text" onChange={(e) => handleComidaChange(day, 'Plato Fuerte', e.target.value)} /></label>
-                    <label>Guarnición:<input type="text" onChange={(e) => handleComidaChange(day, 'Guarnición', e.target.value)} /></label>
+                    <label>Sopa:
+                        {planData.recetas.map((receta, index) => (
+                            <div key={index}>
+                                <input
+                                    type="text"
+                                    list={`soup-receta-suggestions-${index}`}
+                                    value={receta.nombre}
+                                    onChange={(e) => handleComidaChange(day, 'Sopa', e.target.value)}
+                                />
+                                <datalist id={`soup-receta-suggestions-${index}`}>
+                                    {recipes.filter(object => object.tipo === 'Sopa').map((object) => (
+                                        <option key={object.id} value={object.nombre} />
+                                    ))}
+                                </datalist>
+                            </div>
+                        ))}
+                        <input type="text" onChange={(e) => handleComidaChange(day, 'Sopa', e.target.value)} /></label>
+                    <label>Plato Fuerte:
+                        {planData.recetas.map((receta, index) => (
+                            <div key={index}>
+                                <input
+                                    type="text"
+                                    list={`main-receta-suggestions-${index}`}
+                                    value={receta.nombre}
+                                    onChange={(e) => handleComidaChange(day, 'Plato Fuerte', e.target.value)}
+                                />
+                                <datalist id={`main-receta-suggestions-${index}`}>
+                                    {recipes.filter(object => object.tipo === 'Plato Fuerte').map((object) => (
+                                        <option key={object.id} value={object.nombre} />
+                                    ))}
+                                </datalist>
+                            </div>
+                        ))}
+                        <input type="text" onChange={(e) => handleComidaChange(day, 'Plato Fuerte', e.target.value)} />
+                    </label>
+                    <label>Guarnición:
+                        {planData.recetas.map((receta, index) => (
+                            <div key={index}>
+                                <input
+                                    type="text"
+                                    list={`side-receta-suggestions-${index}`}
+                                    value={receta.nombre}
+                                    onChange={(e) => handleComidaChange(day, 'Guarnición', e.target.value)}
+                                />
+                                <datalist id={`side-receta-suggestions-${index}`}>
+                                    {recipes.filter(object => object.tipo === 'Guarnicion').map((object) => (
+                                        <option key={object.id} value={object.nombre} />
+                                    ))}
+                                </datalist>
+                            </div>
+                        ))}
+                        <input type="text" onChange={(e) => handleComidaChange(day, 'Guarnición', e.target.value)} />
+                    </label>
                 </div>
             ))}
 

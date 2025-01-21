@@ -3,7 +3,7 @@ const createConnection = require('../db/connection'); // Import the database con
 
 const getRecipes = async (req, res, next) => {
     let connection;
-    const recipesQuery = 'SELECT id_receta as id,nombre,descripcion,racion,tags FROM Recetas';
+    const recipesQuery = 'SELECT id_receta as id,nombre,descripcion,racion,tipo_platillo,fuente FROM Recetas';
     try{
         connection = await createConnection();
         await connection.beginTransaction();
