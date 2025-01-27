@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { useState } from 'react';
 import { FiMenu, FiX, FiHome, FiBook, FiCalendar, FiSettings } from 'react-icons/fi';
 
-const Sidebar = () => {
+export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(true);
 
   return (
@@ -29,5 +29,3 @@ const Sidebar = () => {
     </div>
   );
 };
-
-export { Sidebar }; // Named export
