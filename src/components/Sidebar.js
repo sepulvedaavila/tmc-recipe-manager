@@ -1,29 +1,33 @@
-import React from 'react';
+// src/components/Sidebar.js
 import { NavLink } from 'react-router-dom';
+import { useState } from 'react';
+import { FiMenu, FiX, FiHome, FiBook, FiCalendar, FiSettings } from 'react-icons/fi';
 
 const Sidebar = () => {
-    return (
-        <nav className="sidebar">
-            <h2>Menu</h2>
-            <ul>
-                <li>
-                    <NavLink to="/planes" className={({ isActive }) => (isActive ? 'active' : '')}>
-                        Planes
-                    </NavLink>
-                </li>
-                <li>
-                    <NavLink to="/recetas" className={({ isActive }) => (isActive ? 'active' : '')}>
-                        Recetas
-                    </NavLink>
-                </li>
-                <li>
-                    <NavLink to="/mi-cuenta" className={({ isActive }) => (isActive ? 'active' : '')}>
-                        Mi cuenta
-                    </NavLink>
-                </li>
-            </ul>
-        </nav>
-    );
+  const [isOpen, setIsOpen] = useState(true);
+
+  return (
+    <div className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
+      <button className="toggle-btn" onClick={() => setIsOpen(!isOpen)}>
+        {isOpen ? <FiX /> : <FiMenu />}
+      </button>
+      
+      <nav>
+        <NavLink to="/" className="nav-item">
+          <FiHome /> {isOpen && 'Home'}
+        </NavLink>
+        <NavLink to="/recipes" className="nav-item">
+          <FiBook /> {isOpen && 'Recipes'}
+        </NavLink>
+        <NavLink to="/meal-plan" className="nav-item">
+          <FiCalendar /> {isOpen && 'Meal Plans'}
+        </NavLink>
+        <NavLink to="/settings" className="nav-item">
+          <FiSettings /> {isOpen && 'Settings'}
+        </NavLink>
+      </nav>
+    </div>
+  );
 };
 
-export default Sidebar;
+export { Sidebar }; // Named export
