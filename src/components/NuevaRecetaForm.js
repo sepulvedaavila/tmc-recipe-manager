@@ -25,6 +25,7 @@ function NuevaRecetaForm() {
             setFormData({
                 titulo: '',
                 fuente: '',
+                refFuente: '',
                 tipoPlatillo: '',
                 racion: 1,
                 ingredientes: [{ ingrediente: '', unidad: '', cantidad: 0 }],
@@ -59,6 +60,7 @@ function NuevaRecetaForm() {
             <h2>Nueva Receta</h2>
             <label>Título:<input type="text" value={formData.titulo} onChange={(e) => setFormData({ ...formData, titulo: e.target.value })} /></label>
             <label>Fuente:<input type="text" value={formData.fuente} onChange={(e) => setFormData({ ...formData, fuente: e.target.value })} /></label>
+            <label>Reference Link:<input type="url" value={formData.refFuente} onChange={(e) => setFormData({ ...formData, refFuente: e.target.value })} /></label>
             <label>Tipo de Platillo:
                 <select value={formData.tipoPlatillo} onChange={(e) => setFormData({ ...formData, tipoPlatillo: e.target.value })}>
                     <option value="">Seleccione...</option>

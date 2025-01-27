@@ -3,7 +3,7 @@ const createConnection = require('../db/connection'); // Import the database con
 
 const getPlans = async (req, res, next) => {
     let connection;
-    const planesQuery = 'select nombre_plan, fecha_inicio, fecha_fin,cliente from Planes;';
+    const planesQuery = 'select nombre_plan, fecha_creacion, cliente, racion from Planes;';
     try{
         connection = await createConnection();
         await connection.beginTransaction();
@@ -25,7 +25,7 @@ const postPlans = async (req, res, next) => {
 
     const plan = req.body;
     console.log(plan);
-    console.log(res);
+    //console.log(res);
 
     let connection;
 
@@ -37,24 +37,28 @@ const postPlans = async (req, res, next) => {
         await connection.beginTransaction();
 
         const planInsertQuery = `
-                INSERT INTO Planes (nombre, cliente, fecha_inicio, fecha_fin)
+                INSERT INTO Planes (nombre_plan, cliente, fecha_creacion, racion)
                 VALUES (?, ?, ?, ?)
             `;
-
+        var datetime = new Date();
         const [planResult] = await connection.execute(planInsertQuery,
-            [plan.nombre, plan.cliente, plan.fechaInicio, plan.fechaFin]
+            [plan.nombre, plan.cliente, datetime, plan.racion]
         );
 
         const planId = planResult.insertId;
 
         // Insert into the "Ingredientes" table
         const planRecetasQuery =
-            'INSERT INTO Plan_Recetas (id_plan, id_receta) VALUES (?, ?)';
+            'INSERT INTO Plan_Recetas (id_plan, id_soup, id_main, id_side, dia_semana) VALUES (?, ?, ?, ?, ?)';
 
         for (const receta of plan.recetas) {
+            dia = Object.keys(receta).find(key => receta[key] === value);
             await connection.execute(planRecetasQuery, [
                 planId,
-                receta.recetaId
+                dia,
+                receta.dia.Sopa,
+                receta.dia['Plato Fuerte'],
+                receta.dia['Guarnicion'],
             ]);
         }
 

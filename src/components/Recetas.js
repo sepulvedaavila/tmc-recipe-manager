@@ -16,7 +16,7 @@ const Recipes = () => {
         const data = await response.json();
 
         const recipesArray = data.recipeResult.map((recipe) => {
-          return { id: recipe.id, nombre: recipe.nombre, descripcion: recipe.descripcion, racion: recipe.racion, tags: recipe.tags };
+          return { id: recipe.id_receta, nombre: recipe.nombre, descripcion: recipe.descripcion, racion: recipe.racion, tags: recipe.tags };
         });
         console.log(recipesArray);
         setRecipes(recipesArray);
