@@ -223,3 +223,250 @@ body {
   height: 200px;
   object-fit: cover;
 }
+
+/* Add these styles to your CSS (client/src/index.css) */
+
+.main-content {
+  margin-left: 250px; /* Match sidebar width */
+  padding: 20px;
+  max-width: 100%;
+  overflow-x: hidden; /* Prevent horizontal overflow */
+}
+
+.recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.recipe-card {
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 20px;
+  transition: transform 0.2s;
+  break-inside: avoid; /* Prevent card splitting */
+}
+
+.recipe-card:hover {
+  transform: translateY(-2px);
+}
+
+.recipe-card h3 {
+  margin: 0 0 10px 0;
+  color: #2c3e50;
+  font-size: 1.2rem;
+}
+
+.recipe-card p {
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin: 0 0 15px 0;
+  height: 60px; /* Fixed height for description */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recipe-meta {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  color: #7f8c8d;
+  font-size: 0.85rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .recipe-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 60px; /* Match collapsed sidebar width */
+    padding: 10px;
+  }
+  
+  .recipe-grid {
+    grid-template-columns: 1fr; /* Single column on mobile */
+  }
+}
+
+.recipe-card {
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* Add this to ensure proper box sizing */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Add scrollable container if content is too long */
+.app-container {
+  min-height: 100vh;
+  display: flex;
+}
+
+/* Skeleton loading animation */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-card {
+  background: #f0f0f0;
+  background-image: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e0e0e0 50%,
+    #f0f0f0 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  height: 200px;
+  border-radius: 8px;
+}
+
+/* Add to your CSS */
+.controls {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 15px;
+  margin-bottom: 25px;
+  align-items: center;
+}
+
+.search-input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.sort-select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+}
+
+.nutrition {
+  margin-top: 10px;
+  padding: 8px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.meta {
+  display: flex;
+  gap: 15px;
+  margin: 10px 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.description {
+  color: #444;
+  line-height: 1.4;
+  min-height: 60px;
+}
+.meta {
+  display: flex;
+  gap: 15px;
+  margin: 10px 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.source {
+  color: #888;
+  font-style: italic;
+  margin-bottom: 10px;
+}
+
+.ingredients {
+  margin-top: 15px;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+.ingredients h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.ingredients ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.ingredients li {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 4px;
+}
+/* Filter controls */
+.filter-group {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.filter-select {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.portion-range {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.portion-range input {
+  width: 80px;
+  padding: 6px;
+}
+
+/* Filter chips */
+.filter-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.chip {
+  background: #e2e6ea;
+  padding: 6px 12px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chip button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+}
+
+.clear-all {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 20px;
+}
