@@ -40,9 +40,10 @@ const RecipeList = () => {
     fetchRecipes();
   }, [searchTerm, sortBy, filters]);
 
-  const handleDishTypeChange = (selectedOptions) => {
-    setFilters(prev => ({ ...prev, dishTypes: selectedOptions }));
-  };
+  // This function is currently unused since the Select component is commented out
+  // const handleDishTypeChange = (selectedOptions) => {
+  //   setFilters(prev => ({ ...prev, dishTypes: selectedOptions }));
+  // };
 
   const handlePortionChange = (e) => {
     setFilters(prev => ({
@@ -109,9 +110,6 @@ const RecipeList = () => {
           </div>
         </div>
 
-        <Link to="/new-recipe" className="btn btn-primary">
-          New Recipe
-        </Link>
       </div>
 
       <div className="recipe-grid">

@@ -63,9 +63,14 @@ const getRecipes = async (req, res, next) => {
 
     query += ' GROUP BY r.id_receta';
 
-    // Add sorting logic
-    const [sortField, sortDirection] = sort.split(':');
-    query += ` ORDER BY ${sortField} ${sortDirection}`;
+    // Add sorting logic only if sort parameter exists
+    if (sort) {
+        const [sortField, sortDirection] = sort.split(':');
+        query += ` ORDER BY ${sortField} ${sortDirection}`;
+    } else {
+        // Default sorting
+        query += ` ORDER BY r.nombre ASC`;
+    }
 
     try {
         // Get connection from pool
@@ -90,6 +95,7 @@ const getRecipes = async (req, res, next) => {
             FROM recetas r 
             LEFT JOIN ingredientes i ON r.id_receta = i.id_receta 
             GROUP BY r.id_receta
+            ORDER BY r.nombre ASC
         `);
 
         // Process ingredients into structured format
@@ -112,11 +118,19 @@ const getRecipes = async (req, res, next) => {
             };
         });
 
+        // Log successful response
+        console.log(`Found ${formattedRecipes.length} recipes`);
+        
         res.json(formattedRecipes);
     } catch (error) {
-        console.error('Error al obtener recetas:', error);
-        if (connection) await connection.rollback();
-        res.status(500).json({ message: 'Error al obtener recetas' });
+        // Detailed error logging
+        console.error('Error fetching recipes:', error);
+        
+        // Send appropriate error response
+        res.status(500).json({
+            message: 'Error al obtener las recetas',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     } finally {
         if (connection) await connection.release();
     }
@@ -131,6 +145,8 @@ const postRecipe = async (req, res, next) => {
     let connection;
 
     try {
+        // Log the request
+        console.log('Creating new recipe:', receta);
 
         connection = await createConnection();
 
@@ -161,14 +177,21 @@ const postRecipe = async (req, res, next) => {
         // Commit the transaction
         await connection.commit();
 
+        // Log successful creation
+        console.log('Recipe created:', recipeId);
+        
         res.json({ message: 'Receta guardada con éxito!' });
     } catch (error) {
-        console.error('Error al guardar la receta:', error);
-
+        // Detailed error logging
+        console.error('Error creating recipe:', error);
+        
         // Rollback the transaction
         await connection.rollback();
 
-        res.json({ message: 'Error al guardar la receta' });
+        res.status(500).json({
+            message: 'Error al crear la receta',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     }
 
 };

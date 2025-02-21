@@ -4,6 +4,6 @@ const planController  = require('../controllers/planes');
 const plansRouter = express.Router();
 
 plansRouter.get('/', planController.getPlans);
-plansRouter.post('/', planController.postPlans);
+plansRouter.post('/', planController.postPlan);
 
 module.exports = plansRouter;
