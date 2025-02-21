@@ -1,83 +1,110 @@
-const createConnection = require('../db/connection'); // Import the database connection
-
+const pool = require('../db/database'); // Import the pool instead of createConnection
 
 const getPlans = async (req, res, next) => {
     let connection;
-    const planesQuery = 'select nombre_plan, fecha_creacion, cliente, racion from Planes;';
-    try{
-        connection = await createConnection();
-        await connection.beginTransaction();
-        const [planResult] = await connection.execute(planesQuery);
-        await connection.commit();
-
-        res.json({planResult});
-    } catch (error) {
-        console.error('Error al obetener planes:', error);
-
-        // Rollback the transaction
-        await connection.rollback();
-
-        res.json({ message: 'Error al obetener planes' });
-    }
-  };
-
-const postPlans = async (req, res, next) => {
-
-    const plan = req.body;
-    console.log(plan);
-    //console.log(res);
-
-    let connection;
-
     try {
-
-        connection = await createConnection();
-
-        // Start a transaction
+        // Get connection from pool
+        connection = await pool.getConnection();
         await connection.beginTransaction();
 
-        const planInsertQuery = `
-                INSERT INTO Planes (nombre_plan, cliente, fecha_creacion, racion)
-                VALUES (?, ?, ?, ?)
-            `;
-        var datetime = new Date();
-        const [planResult] = await connection.execute(planInsertQuery,
-            [plan.nombre, plan.cliente, datetime, plan.racion]
-        );
+        // Get basic plan information
+        const [planResult] = await connection.execute(`
+            SELECT 
+                p.id_plan,
+                p.nombre_plan,
+                p.fecha_creacion,
+                p.cliente,
+                p.racion
+            FROM Planes p
+            ORDER BY p.fecha_creacion DESC
+        `);
 
-        const planId = planResult.insertId;
+        // Get recipes for each plan
+        for (let plan of planResult) {
+            const [recetasResult] = await connection.execute(`
+                SELECT 
+                    pr.dia_semana,
+                    pr.id_soup,
+                    pr.id_main,
+                    pr.id_side
+                FROM plan_recetas pr
+                WHERE pr.id_plan = ?
+            `, [plan.id_plan]);
 
-        // Insert into the "Ingredientes" table
-        const planRecetasQuery =
-            'INSERT INTO Plan_Recetas (id_plan, id_soup, id_main, id_side, dia_semana) VALUES (?, ?, ?, ?, ?)';
-
-        for (const receta of plan.recetas) {
-            dia = Object.keys(receta).find(key => receta[key] === value);
-            await connection.execute(planRecetasQuery, [
-                planId,
-                dia,
-                receta.dia.Sopa,
-                receta.dia['Plato Fuerte'],
-                receta.dia['Guarnicion'],
-            ]);
+            plan.recetas = recetasResult;
         }
 
-        // Commit the transaction
         await connection.commit();
-
-        res.json({ message: 'Receta guardada con éxito!' });
+        res.json({ planResult });
     } catch (error) {
-        console.error('Error al guardar el plan:', error);
-
-        // Rollback the transaction
-        await connection.rollback();
-
-        res.json({ message: 'Error al guardar el plan' });
+        console.error('Error al obtener planes:', error);
+        if (connection) await connection.rollback();
+        res.status(500).json({ message: 'Error al obtener planes' });
+    } finally {
+        if (connection) {
+            connection.release(); // Release connection back to pool
+        }
     }
+};
 
+const postPlan = async (req, res) => {
+    let connection;
+    try {
+        const plan = req.body;
+        console.log('Received plan data:', plan);
+
+        // Get connection from pool
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+
+        // Insert plan
+        const [planResult] = await connection.execute(
+            'INSERT INTO planes (nombre_plan, cliente, racion) VALUES (?, ?, ?)',
+            [plan.nombre, plan.cliente, plan.racion]
+        );
+        const planId = planResult.insertId;
+
+        // Insert recipes for the plan
+        const recipeInsertQuery = 
+            'INSERT INTO plan_recetas (id_plan, dia_semana, id_soup, id_main, id_side) VALUES (?, ?, ?, ?, ?)';
+
+        // Insert each day's recipes
+        if (Array.isArray(plan.recetas)) {
+            await Promise.all(plan.recetas.map(receta => 
+                connection.execute(recipeInsertQuery, [
+                    planId,
+                    receta.dia_semana,
+                    receta.id_soup,
+                    receta.id_main,
+                    receta.id_side
+                ])
+            ));
+        } else {
+            throw new Error('Invalid recipes data format');
+        }
+
+        await connection.commit();
+        res.status(201).json({ 
+            message: 'Plan guardado con éxito!',
+            planId: planId 
+        });
+
+    } catch (error) {
+        console.error('Error saving plan:', error);
+        if (connection) await connection.rollback();
+        
+        res.status(500).json({ 
+            message: 'Error al guardar el plan',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    } finally {
+        if (connection) {
+            connection.release(); // Release connection back to pool
+        }
+    }
 };
 
 module.exports = { 
-    postPlans,
+    postPlan,
     getPlans 
 };
