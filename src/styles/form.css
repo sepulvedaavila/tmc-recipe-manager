@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Arsenal:wght@400;700&display=swap');
 a, abbr, acronym, address, applet, article, aside, audio, b, big, blockquote, body, canvas, caption, center, cite, code, dd, del, details, dfn, div, dl, dt, em, embed, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, html, i, iframe, img, ins, kbd, label, legend, li, mark, menu, nav, object, ol, output, p, pre, q, ruby, s, samp, section, small, span, strike, strong, sub, summary, sup, table, tbody, td, tfoot, th, thead, time, tr, tt, u, ul, var, video {
   margin: 0;
   padding: 0;
@@ -750,3 +751,182 @@ details summary::-webkit-details-marker {
 }
 
 /*# sourceMappingURL=form.css.map */
+/* Root Variables */
+:root {
+  /* Brand Colors */
+  --color-background: #f4f4f4;
+  --color-text-primary: #232323;
+  --color-text-secondary: #3c4c42;
+  --color-accent-primary: #2d3d23;
+  --color-accent-secondary: #5c6861;
+  --color-neutral: #989ca0;
+  
+  /* Spacing System */
+  --spacing-xs: 0.25rem;  /* 4px */
+  --spacing-sm: 0.5rem;   /* 8px */
+  --spacing-md: 1rem;     /* 16px */
+  --spacing-lg: 1.5rem;   /* 24px */
+  --spacing-xl: 2rem;     /* 32px */
+  
+  /* Border Radius */
+  --radius-sm: 0.25rem;   /* 4px */
+  --radius-md: 0.5rem;    /* 8px */
+  --radius-lg: 1rem;      /* 16px */
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Base Card Styles */
+.card {
+  background-color: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-neutral);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.card-header {
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-background);
+}
+
+.card-title {
+  font-family: 'Arsenal', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-accent-primary);
+  line-height: 1.2;
+  margin: 0;
+}
+
+.card-content {
+  padding: var(--spacing-lg);
+}
+
+/* Specific Card Variations */
+.card--recipe {
+  overflow: hidden;
+}
+
+.card--recipe img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.card--planner {
+  background-color: var(--color-background);
+}
+
+/* Interactive Elements */
+.button {
+  font-family: 'Arsenal', sans-serif;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.button--primary {
+  background-color: var(--color-accent-primary);
+  color: white;
+}
+
+.button--primary:hover {
+  background-color: var(--color-accent-secondary);
+}
+
+.button--secondary {
+  background-color: var(--color-background);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-neutral);
+}
+
+.button--secondary:hover {
+  background-color: var(--color-neutral);
+  color: white;
+}
+
+/* Form Elements */
+.input {
+  font-family: 'Arsenal', sans-serif;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-neutral);
+  width: 100%;
+  transition: border-color 0.3s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-accent-secondary);
+}
+
+/* Layout Utilities */
+.grid {
+  display: grid;
+  gap: var(--spacing-md);
+}
+
+.grid--2-cols {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.grid--3-cols {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .grid--2-cols,
+  .grid--3-cols {
+    grid-template-columns: 1fr;
+  }
+  
+  .card-header,
+  .card-content {
+    padding: var(--spacing-md);
+  }
+}
+
+/* Animation & Transitions */
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Accessibility & Focus States */
+:focus {
+  outline: 2px solid var(--color-accent-secondary);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}

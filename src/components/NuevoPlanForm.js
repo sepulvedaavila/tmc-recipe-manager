@@ -18,15 +18,20 @@ function NuevoPlanForm() {
             try {
                 const response = await fetch('./api/recipes');
                 if (!response.ok) throw new Error('Failed to fetch recipes');
-                const dataRecipes = await response.json();
+                const data = await response.json();
 
-                const recipesArray = dataRecipes.recipeResult.map((recipe) => {
+                // The response is now directly an array of formatted recipes
+                const recipesArray = data.map((recipe) => {
                     return {
-                        id: recipe.id_receta, nombre: recipe.nombre, descripcion: recipe.descripcion,
-                        racion: recipe.racion, tags: recipe.tags, tipo: recipe.tipo_platillo
+                        id: recipe.recipe_id,
+                        nombre: recipe.nombre,
+                        descripcion: recipe.descripcion,
+                        racion: recipe.racion,
+                        tipo: recipe.tipo_platillo
                     };
                 });
                 setRecipes(recipesArray);
+                //console.log('Fetched recipes:', recipesArray); // Debug log
 
             } catch (error) {
                 console.error('Error fetching recipes:', error);
@@ -48,43 +53,86 @@ function NuevoPlanForm() {
 
     const handleComidaChange = (day, id, tipo, value) => {
         setPlanData((prev) => {
+            // Update comidas for display purposes
             const updatedComidas = { ...prev.comidas };
             if (!updatedComidas[day]) {
                 updatedComidas[day] = {};
             }
             updatedComidas[day][tipo] = value;
-            console.log(updatedComidas);
 
-            const updatedComidas2 = { ...prev.recetas };
-            if (!updatedComidas2[day]) {
-                updatedComidas2[day] = {};
-            }
-            updatedComidas2[day][tipo] = id;
-            console.log(updatedComidas2);
-            return { ...prev, comidas: updatedComidas, recetas: updatedComidas2 };
+            // Update recetas grouped by day
+            const updatedRecetas = prev.recetas.filter(r => r.dia_semana !== day);
+            
+            // Find existing recipe group for this day
+            const existingDayRecipes = prev.recetas.find(r => r.dia_semana === day) || {
+                dia_semana: day,
+                id_soup: null,
+                id_main: null,
+                id_side: null
+            };
+
+            // Update the appropriate recipe ID based on tipo
+            const updatedDayRecipes = {
+                ...existingDayRecipes,
+                ...(tipo === 'Sopa' && { id_soup: id }),
+                ...(tipo === 'Plato Fuerte' && { id_main: id }),
+                ...(tipo === 'Guarnición' && { id_side: id })
+            };
+
+            return {
+                ...prev,
+                comidas: updatedComidas,
+                recetas: [...updatedRecetas, updatedDayRecipes]
+            };
         });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(planData);
-        const response = await fetch('./api/plans', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(planData),
-        });
-        if (response.ok) {
-            alert('Plan saved successfully!');
-            setPlanData({
-                nombre: '',
-                cliente: '',
-                dias: [],
-                racion: 1,
-                comidas: {},
-                recetas: []
+        
+        // Format the data for the backend
+        const formattedData = {
+            nombre_plan: planData.nombre,
+            cliente: 1, // Default value as per the API structure
+            racion: parseInt(planData.racion),
+            recetas: planData.recetas
+                .filter(receta => receta.dia_semana && (receta.id_soup || receta.id_main || receta.id_side))
+                .map(receta => ({
+                    dia_semana: receta.dia_semana,
+                    id_soup: receta.id_soup ? parseInt(receta.id_soup) : null,
+                    id_main: receta.id_main ? parseInt(receta.id_main) : null,
+                    id_side: receta.id_side ? parseInt(receta.id_side) : null
+                }))
+        };
+
+        console.log('Sending plan data:', formattedData);
+
+        try {
+            const response = await fetch('/api/plans', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formattedData),
             });
-        } else {
-            alert('Error saving plan');
+
+            if (response.ok) {
+                alert('Plan guardado exitosamente!');
+                setPlanData({
+                    nombre: '',
+                    cliente: '',
+                    dias: [],
+                    racion: 1,
+                    comidas: {},
+                    recetas: []
+                });
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Error al guardar el plan');
+            }
+        } catch (error) {
+            console.error('Error saving plan:', error);
+            alert(error.message);
         }
     };
 
@@ -136,12 +184,19 @@ function NuevoPlanForm() {
                             value={planData.comidas[day]?.['Sopa'] || ''}
                             onChange={(e) => handleComidaChange(day, e.target.selectedOptions[0].getAttribute('meal_id'), 'Sopa', e.target.value)}
                         >
-                            <option value="">Select a soup</option>
-                            {recipes.filter(object => object.tipo === 'Sopa').map((object) => (
-                                <option key={object.id} meal_id={object.id} value={object.nombre}>
-                                    {object.nombre}
-                                </option>
-                            ))}
+                            <option value="">Seleccionar sopa</option>
+                            {recipes
+                                .filter(recipe => recipe.tipo === 'Sopa')
+                                .map((recipe) => (
+                                    <option 
+                                        key={recipe.id} 
+                                        meal_id={recipe.id} 
+                                        value={recipe.nombre}
+                                    >
+                                        {recipe.nombre}
+                                    </option>
+                                ))
+                            }
                         </select>
                     </div>
                     <div>
@@ -150,26 +205,40 @@ function NuevoPlanForm() {
                             value={planData.comidas[day]?.['Plato Fuerte'] || ''}
                             onChange={(e) => handleComidaChange(day, e.target.selectedOptions[0].getAttribute('meal_id'), 'Plato Fuerte', e.target.value)}
                         >
-                            <option value="">Select a main course</option>
-                            {recipes.filter(object => object.tipo === 'Plato Fuerte').map((object) => (
-                                <option key={object.id} meal_id={object.id} value={object.nombre}>
-                                    {object.nombre}
-                                </option>
-                            ))}
+                            <option value="">Seleccionar plato fuerte</option>
+                            {recipes
+                                .filter(recipe => recipe.tipo === 'Plato Fuerte')
+                                .map((recipe) => (
+                                    <option 
+                                        key={recipe.id} 
+                                        meal_id={recipe.id} 
+                                        value={recipe.nombre}
+                                    >
+                                        {recipe.nombre}
+                                    </option>
+                                ))
+                            }
                         </select>
                     </div>
                     <div>
                         <label>Guarnición:</label>
                         <select
-                            value={planData.comidas[day]?.['Side'] || ''}
+                            value={planData.comidas[day]?.['Guarnición'] || ''}
                             onChange={(e) => handleComidaChange(day, e.target.selectedOptions[0].getAttribute('meal_id'), 'Guarnición', e.target.value)}
                         >
-                            <option value="">Select a side dish</option>
-                            {recipes.filter(object => object.tipo === 'Guarnicion').map((object) => (
-                                <option key={object.id} meal_id={object.id} value={object.nombre}>
-                                    {object.nombre}
-                                </option>
-                            ))}
+                            <option value="">Seleccionar guarnición</option>
+                            {recipes
+                                .filter(recipe => recipe.tipo === 'Guarnicion')
+                                .map((recipe) => (
+                                    <option 
+                                        key={recipe.id} 
+                                        meal_id={recipe.id} 
+                                        value={recipe.nombre}
+                                    >
+                                        {recipe.nombre}
+                                    </option>
+                                ))
+                            }
                         </select>
                     </div>
                 </div>
