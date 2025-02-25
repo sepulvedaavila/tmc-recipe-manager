@@ -63,7 +63,14 @@ const MealPlanList = () => {
 
     return (
         <div className="main-content">
-            <h2 className="text-3xl font-bold text-[#2d3748] mb-6">Meal Plans</h2>
+            <div className="search-section bg-white rounded-xl shadow-sm mb-8 overflow-hidden">
+                {/* Title Section */}
+                <div className="p-6 border-b border-gray-100">
+                    <h1 className="page-title">
+                        Meal Plans
+                    </h1>
+                </div>
+            </div>
 
             {loading ? (
                 <div className="meal-plan-grid">

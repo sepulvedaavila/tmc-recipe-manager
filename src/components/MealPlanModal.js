@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { FiX, FiCalendar, FiClock, FiShoppingBag } from 'react-icons/fi';
+import { FiX, FiCalendar, FiClock, FiShoppingBag, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 
 const MealPlanModal = ({ mealPlan, onClose }) => {
     const [aggregatedIngredients, setAggregatedIngredients] = useState({});
-    const [activeTab, setActiveTab] = useState('plan'); // 'plan' or 'shopping'
+    const [isMealScheduleOpen, setIsMealScheduleOpen] = useState(true);
+    const [isShoppingListOpen, setIsShoppingListOpen] = useState(true);
 
     useEffect(() => {
         if (mealPlan && mealPlan.comidas) {
-            // Aggregate ingredients across all recipes in the meal plan
             const ingredients = {};
             mealPlan.comidas.forEach(meal => {
                 if (meal.receta && meal.receta.ingredientes) {
@@ -27,6 +27,15 @@ const MealPlanModal = ({ mealPlan, onClose }) => {
             setAggregatedIngredients(ingredients);
         }
     }, [mealPlan]);
+
+    // Group meals by day
+    const mealsByDay = mealPlan?.comidas?.reduce((acc, meal) => {
+        if (!acc[meal.dia]) {
+            acc[meal.dia] = [];
+        }
+        acc[meal.dia].push(meal);
+        return acc;
+    }, {});
 
     if (!mealPlan) return null;
 
@@ -63,105 +72,136 @@ const MealPlanModal = ({ mealPlan, onClose }) => {
                             {mealPlan.comidas?.length || 0} meals
                         </span>
                     </div>
-
-                    {/* Tab Navigation */}
-                    <div className="flex mt-6 border-b border-gray-200">
-                        <button
-                            className={`px-4 py-2 font-medium text-sm ${
-                                activeTab === 'plan'
-                                    ? 'text-[#28a745] border-b-2 border-[#28a745]'
-                                    : 'text-gray-500 hover:text-[#28a745]'
-                            }`}
-                            onClick={() => setActiveTab('plan')}
-                        >
-                            Meal Plan
-                        </button>
-                        <button
-                            className={`px-4 py-2 font-medium text-sm ${
-                                activeTab === 'shopping'
-                                    ? 'text-[#28a745] border-b-2 border-[#28a745]'
-                                    : 'text-gray-500 hover:text-[#28a745]'
-                            }`}
-                            onClick={() => setActiveTab('shopping')}
-                        >
-                            Shopping List
-                        </button>
-                    </div>
                 </div>
 
                 {/* Content Section */}
                 <div className="modal-body">
-                    {activeTab === 'plan' ? (
-                        // Meal Plan View
-                        <div className="space-y-6">
-                            {mealPlan.comidas?.map((meal, index) => (
-                                <div key={index} className="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div>
-                                            <h3 className="font-medium text-gray-900">
-                                                {meal.dia} - {meal.tipo_comida}
-                                            </h3>
-                                            <p className="text-lg font-semibold text-[#28a745]">
-                                                {meal.receta?.nombre}
-                                            </p>
-                                        </div>
-                                        <span className="text-sm text-gray-500">
-                                            {meal.receta?.racion} portions
-                                        </span>
-                                    </div>
-                                    {meal.receta?.descripcion && (
-                                        <p className="text-gray-600 text-sm mt-2">
-                                            {meal.receta.descripcion}
-                                        </p>
+                    {/* Meal Schedule Section */}
+                    <section className="modal-section">
+                        <div 
+                            className="flex items-center justify-between cursor-pointer mb-4"
+                            onClick={() => setIsMealScheduleOpen(!isMealScheduleOpen)}
+                        >
+                            <h3 className="modal-section-title flex items-center justify-between w-full">
+                                Meal Schedule
+                                <span className="text-sm text-gray-500 ml-2">
+                                    ({Object.keys(mealsByDay).length} days)
+                                </span>
+                                <button className="p-2 hover:bg-gray-100 rounded-full transition-colors ml-auto">
+                                    {isMealScheduleOpen ? (
+                                        <FiChevronUp className="w-5 h-5 text-gray-500" />
+                                    ) : (
+                                        <FiChevronDown className="w-5 h-5 text-gray-500" />
                                     )}
-                                </div>
-                            ))}
+                                </button>
+                            </h3>
                         </div>
-                    ) : (
-                        // Shopping List View
-                        <div>
-                            <div className="flex items-center gap-2 mb-4">
-                                <FiShoppingBag className="text-[#28a745] w-5 h-5" />
-                                <h3 className="text-lg font-medium text-gray-900">
-                                    Shopping List
-                                </h3>
-                            </div>
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-100">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Ingredient
-                                            </th>
-                                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Amount
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Unit
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
-                                        {Object.values(aggregatedIngredients)
-                                            .sort((a, b) => a.ingrediente.localeCompare(b.ingrediente))
-                                            .map((ing, index) => (
-                                                <tr key={index} className="hover:bg-gray-50">
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                        {ing.ingrediente}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                                                        {ing.cantidad_total}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {ing.unidad}
-                                                    </td>
-                                                </tr>
+
+                        {isMealScheduleOpen && (
+                            <div className="space-y-6">
+                                {Object.entries(mealsByDay).map(([day, meals]) => (
+                                    <div key={day} className="bg-gray-50 rounded-xl overflow-hidden">
+                                        <div className="bg-gray-100 px-6 py-3 border-b border-gray-200">
+                                            <h4 className="text-lg font-semibold text-gray-800">
+                                                {day}
+                                            </h4>
+                                        </div>
+                                        <div className="p-4 space-y-4">
+                                            {meals.map((meal, index) => (
+                                                <div key={index} className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                                                    <div className="flex justify-between items-start">
+                                                        <div className="space-y-2">
+                                                            <span className="inline-block px-3 py-1 bg-[#28a745] bg-opacity-10 rounded-full text-sm font-medium text-[#28a745]">
+                                                                {meal.tipo_comida}
+                                                            </span>
+                                                            <p className="text-lg font-bold text-gray-900">
+                                                                {meal.receta?.nombre}
+                                                            </p>
+                                                            {meal.receta?.descripcion && (
+                                                                <p className="text-gray-600 text-sm leading-relaxed">
+                                                                    {meal.receta.descripcion}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                        <span className="text-sm font-medium bg-gray-100 px-3 py-1 rounded-full text-gray-600">
+                                                            {meal.receta?.racion} portions
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             ))}
-                                    </tbody>
-                                </table>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
+                        )}
+                    </section>
+
+                    {/* Shopping List Section */}
+                    <section className="modal-section mt-8">
+                        <div 
+                            className="flex items-center justify-between cursor-pointer mb-4"
+                            onClick={() => setIsShoppingListOpen(!isShoppingListOpen)}
+                        >
+                            <h3 className="modal-section-title flex items-center justify-between w-full">
+                                Shopping List
+                                <span className="text-sm text-gray-500 ml-2">
+                                    ({Object.keys(aggregatedIngredients).length} items)
+                                </span>
+                                <button className="p-2 hover:bg-gray-100 rounded-full transition-colors ml-auto">
+                                    {isShoppingListOpen ? (
+                                        <FiChevronUp className="w-5 h-5 text-gray-500" />
+                                    ) : (
+                                        <FiChevronDown className="w-5 h-5 text-gray-500" />
+                                    )}
+                                </button>
+                            </h3>
                         </div>
-                    )}
+                        
+                        {isShoppingListOpen && (
+                            <div className="bg-white rounded-xl overflow-hidden border border-gray-200">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full border-collapse bg-white">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col" className="bg-[#f8f9fa] px-6 py-4 text-left text-base font-black text-gray-900 uppercase tracking-wider border-2 border-gray-200">
+                                                    Ingredient
+                                                </th>
+                                                <th scope="col" className="bg-[#f8f9fa] px-6 py-4 text-center text-base font-black text-gray-900 uppercase tracking-wider border-2 border-gray-200 w-32">
+                                                    Amount
+                                                </th>
+                                                <th scope="col" className="bg-[#f8f9fa] px-6 py-4 text-left text-base font-black text-gray-900 uppercase tracking-wider border-2 border-gray-200 w-32">
+                                                    Unit
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {Object.values(aggregatedIngredients)
+                                                .sort((a, b) => a.ingrediente.localeCompare(b.ingrediente))
+                                                .map((ing, index) => (
+                                                    <tr 
+                                                        key={index} 
+                                                        className={`
+                                                            ${index % 2 === 0 ? 'bg-white' : 'bg-[#f8f9fa]'}
+                                                            hover:bg-gray-100 transition-all duration-150
+                                                        `}
+                                                    >
+                                                        <td className="px-6 py-3 text-sm font-medium text-gray-900 border border-gray-200 border-l-2">
+                                                            {ing.ingrediente}
+                                                        </td>
+                                                        <td className="px-6 py-3 text-sm font-bold text-gray-800 text-center border border-gray-200">
+                                                            {ing.cantidad_total}
+                                                        </td>
+                                                        <td className="px-6 py-3 text-sm text-gray-600 border border-gray-200 border-r-2">
+                                                            {ing.unidad}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+                    </section>
                 </div>
             </div>
         </div>

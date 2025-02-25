@@ -7,106 +7,92 @@ import { FiSearch, FiFilter, FiX, FiSliders } from 'react-icons/fi';
 const RecipeList = () => {
   const [recipes, setRecipes] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('nombre');
+  const [ingredientSearch, setIngredientSearch] = useState('');
+  const [sourceSearch, setSourceSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
-    dishTypes: ['Sopa', 'Plato fuerte', 'Guarnicion'],
+    dishTypes: ['Soup', 'Main Course', 'Side Dish'],
     minPortions: '',
     maxPortions: '',
     hasIngredients: false
   });
 
-  // Debounced search function
-  const debouncedSearch = useCallback(
-    async (term, sort, filterValues) => {
+  // Fetch recipes
+  useEffect(() => {
+    const fetchRecipes = async () => {
       try {
         setLoading(true);
-        const params = {
-          search: term,
-          sortBy: sort.split(':')[0],
-          sortOrder: sort.split(':')[1] || 'asc',
-          minPortions: filterValues.minPortions || undefined,
-          maxPortions: filterValues.maxPortions || undefined
-        };
-
-        const response = await axios.get('/api/recipes', { params });
+        const response = await axios.get('/api/recipes');
         setRecipes(response.data);
         setError(null);
       } catch (err) {
         setError(err.message);
-        console.error('Search error:', err);
+        console.error('Error fetching recipes:', err);
       } finally {
         setLoading(false);
       }
-    },
-    []
-  );
+    };
 
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      debouncedSearch(searchTerm, sortBy, {
-        minPortions: filters.minPortions,
-        maxPortions: filters.maxPortions
-      });
-    }, 300); // 300ms delay for debouncing
+    fetchRecipes();
+  }, []);
 
-    return () => clearTimeout(timeoutId);
-  }, [searchTerm, sortBy, filters, debouncedSearch]);
+  // Filter recipes based on all search criteria
+  const filteredRecipes = recipes.filter(recipe => {
+    const nameMatch = recipe.nombre.toLowerCase().includes(searchTerm.toLowerCase());
+    const sourceMatch = sourceSearch 
+      ? recipe.fuente?.toLowerCase().includes(sourceSearch.toLowerCase())
+      : true;
+    const ingredientMatch = ingredientSearch
+      ? recipe.ingredientes?.some(ing => 
+          ing.ingrediente.toLowerCase().includes(ingredientSearch.toLowerCase())
+        )
+      : true;
 
-  // This function is currently unused since the Select component is commented out
-  // const handleDishTypeChange = (selectedOptions) => {
-  //   setFilters(prev => ({ ...prev, dishTypes: selectedOptions }));
-  // };
-
-  const handlePortionChange = (e) => {
-    setFilters(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
-  };
+    return nameMatch && sourceMatch && ingredientMatch;
+  });
 
   const clearFilters = () => {
     setSearchTerm('');
-    setFilters(prev => ({
-      ...prev,
-      minPortions: '',
-      maxPortions: ''
-    }));
-    setSortBy('nombre');
+    setIngredientSearch('');
+    setSourceSearch('');
   };
 
   if (error) return <div className="error">Error: {error}</div>;
 
   return (
-    <div className="main-content">
-      <div className="search-section bg-white rounded-xl shadow-sm mb-12 overflow-hidden">
-        {/* Title and Search Bar */}
+    <div className="main-content p-8">
+      <div className="search-section bg-white rounded-xl shadow-sm mb-8 overflow-hidden">
+        {/* Title and Main Search Bar */}
         <div className="p-6 border-b border-gray-100">
-          <h2 className="text-3xl font-bold text-[#2d3748] mb-4">Recipes</h2>
+          <h1 className="page-title text-2xl font-bold text-gray-900 mb-6">
+            Recipes
+          </h1>
           <div className="relative">
             <input
               type="text"
-              placeholder="Search recipes by name, type, or ingredients..."
+              placeholder="Search recipes by name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="styled-form input w-full pl-12 pr-12 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-[#28a745] focus:ring-2 focus:ring-[#28a745] focus:ring-opacity-20 focus:bg-white transition-all"
+              className="w-full pl-11 pr-20 py-3 text-gray-900 text-base rounded-lg bg-gray-50 border border-gray-200 focus:border-[#28a745] focus:ring-2 focus:ring-[#28a745] focus:ring-opacity-20 focus:bg-white transition-all"
             />
             <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#28a745] w-5 h-5" />
-            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm('')}
-                  className="text-[#28a745] hover:text-[#1e7e34] transition-colors p-1"
+                  className="btn btn-icon"
+                  aria-label="Clear search"
                 >
                   <FiX className="w-5 h-5" />
                 </button>
               )}
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className={`submit-button flex items-center justify-center p-2 ${showFilters ? 'bg-[#1e7e34]' : 'bg-[#28a745]'} text-white rounded-lg hover:bg-[#1e7e34] transition-colors`}
+                className={`btn ${showFilters ? 'btn-primary' : 'btn-secondary'}`}
+                aria-label="Toggle filters"
               >
                 <FiSliders className="w-5 h-5" />
               </button>
@@ -114,48 +100,56 @@ const RecipeList = () => {
           </div>
         </div>
 
-        {/* Filters Section */}
+        {/* Advanced Filters Section */}
         {showFilters && (
-          <div className="p-4 bg-[#f8f9fa] border-b border-gray-100">
-            <div className="flex flex-wrap items-center gap-4">
-              {/* Sort Dropdown */}
-              <div className="flex-1 min-w-[200px]">
-                <label className="block text-sm font-medium text-[#28a745] mb-1">Sort by</label>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="styled-form select w-full p-2.5 rounded-lg bg-white border border-gray-200 focus:border-[#28a745] focus:ring-2 focus:ring-[#28a745] focus:ring-opacity-20 transition-all text-gray-600"
-                >
-                  <option value="nombre:asc">Name (A-Z)</option>
-                  <option value="nombre:desc">Name (Z-A)</option>
-                  <option value="racion:asc">Portions (Lowest First)</option>
-                  <option value="racion:desc">Portions (Highest First)</option>
-                </select>
+          <div className="p-6 bg-gray-50 border-b border-gray-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Ingredient Search */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-900">
+                  Search by Ingredient
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Enter ingredient name..."
+                    value={ingredientSearch}
+                    onChange={(e) => setIngredientSearch(e.target.value)}
+                    className="w-full pl-4 pr-10 py-2.5 text-gray-900 text-base rounded-lg bg-white border border-gray-200 focus:border-[#28a745] focus:ring-2 focus:ring-[#28a745] focus:ring-opacity-20 transition-all"
+                  />
+                  {ingredientSearch && (
+                    <button
+                      onClick={() => setIngredientSearch('')}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors"
+                    >
+                      <FiX className="w-4 h-4 text-gray-500" />
+                    </button>
+                  )}
+                </div>
               </div>
 
-              {/* Portions Filter */}
-              <div className="flex-1 min-w-[200px]">
-                <label className="block text-sm font-medium text-[#28a745] mb-1">Portions Range</label>
-                <div className="flex items-center gap-2">
+              {/* Source Search */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-900">
+                  Search by Source
+                </label>
+                <div className="relative">
                   <input
-                    type="number"
-                    name="minPortions"
-                    placeholder="Min"
-                    value={filters.minPortions}
-                    onChange={handlePortionChange}
-                    className="styled-form input flex-1 p-2.5 rounded-lg bg-white border border-gray-200 focus:border-[#28a745] focus:ring-2 focus:ring-[#28a745] focus:ring-opacity-20 transition-all text-gray-600"
-                    min="1"
+                    type="text"
+                    placeholder="Enter recipe source..."
+                    value={sourceSearch}
+                    onChange={(e) => setSourceSearch(e.target.value)}
+                    className="w-full pl-4 pr-10 py-2.5 text-gray-900 text-base rounded-lg bg-white border border-gray-200 focus:border-[#28a745] focus:ring-2 focus:ring-[#28a745] focus:ring-opacity-20 transition-all"
                   />
-                  <span className="text-[#28a745]">-</span>
-                  <input
-                    type="number"
-                    name="maxPortions"
-                    placeholder="Max"
-                    value={filters.maxPortions}
-                    onChange={handlePortionChange}
-                    className="styled-form input flex-1 p-2.5 rounded-lg bg-white border border-gray-200 focus:border-[#28a745] focus:ring-2 focus:ring-[#28a745] focus:ring-opacity-20 transition-all text-gray-600"
-                    min="1"
-                  />
+                  {sourceSearch && (
+                    <button
+                      onClick={() => setSourceSearch('')}
+                      className="btn btn-icon absolute right-2 top-1/2 transform -translate-y-1/2"
+                      aria-label="Clear source search"
+                    >
+                      <FiX className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -163,47 +157,39 @@ const RecipeList = () => {
         )}
 
         {/* Active Filters */}
-        {(filters.minPortions || filters.maxPortions || searchTerm) && (
-          <div className="p-4 flex items-center gap-2 flex-wrap">
-            <span className="text-sm text-[#28a745]">Active filters:</span>
+        {(searchTerm || ingredientSearch || sourceSearch) && (
+          <div className="p-4 flex items-center gap-3 flex-wrap bg-white border-t border-gray-100">
+            <span className="text-sm font-medium text-gray-700">Active filters:</span>
             <div className="flex flex-wrap gap-2">
               {searchTerm && (
-                <span className="filter-tag inline-flex items-center px-3 py-1 rounded-lg text-sm bg-[#28a745] text-white">
-                  Search: {searchTerm}
-                  <button
-                    onClick={() => setSearchTerm('')}
-                    className="ml-2 hover:text-gray-200"
-                  >
+                <span className="filter-tag">
+                  Name: {searchTerm}
+                  <button onClick={() => setSearchTerm('')}>
                     <FiX className="w-4 h-4" />
                   </button>
                 </span>
               )}
-              {filters.minPortions && (
-                <span className="filter-tag inline-flex items-center px-3 py-1 rounded-lg text-sm bg-[#28a745] text-white">
-                  Min portions: {filters.minPortions}
-                  <button
-                    onClick={() => handlePortionChange({ target: { name: 'minPortions', value: '' } })}
-                    className="ml-2 hover:text-gray-200"
-                  >
+              {ingredientSearch && (
+                <span className="filter-tag">
+                  Ingredient: {ingredientSearch}
+                  <button onClick={() => setIngredientSearch('')}>
                     <FiX className="w-4 h-4" />
                   </button>
                 </span>
               )}
-              {filters.maxPortions && (
-                <span className="filter-tag inline-flex items-center px-3 py-1 rounded-lg text-sm bg-[#28a745] text-white">
-                  Max portions: {filters.maxPortions}
-                  <button
-                    onClick={() => handlePortionChange({ target: { name: 'maxPortions', value: '' } })}
-                    className="ml-2 hover:text-gray-200"
-                  >
+              {sourceSearch && (
+                <span className="filter-tag">
+                  Source: {sourceSearch}
+                  <button onClick={() => setSourceSearch('')}>
                     <FiX className="w-4 h-4" />
                   </button>
                 </span>
               )}
               <button
                 onClick={clearFilters}
-                className="submit-button text-sm px-3 py-1 rounded-lg bg-[#dc3545] hover:bg-[#c82333] text-white transition-colors"
+                className="btn btn-danger"
               >
+                <FiX className="w-4 h-4" />
                 Clear all
               </button>
             </div>
@@ -227,7 +213,7 @@ const RecipeList = () => {
       {/* Recipe Grid */}
       {!loading && (
         <div className="recipe-grid">
-          {recipes?.map(recipe => (
+          {filteredRecipes.map(recipe => (
             <div 
               key={recipe.recipe_id} 
               className="recipe-card cursor-pointer transform hover:scale-102 hover:shadow-lg transition-all duration-300"
@@ -288,6 +274,13 @@ const RecipeList = () => {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Show "No results" message when no recipes match the filters */}
+      {!loading && filteredRecipes.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-xl text-gray-600">No recipes found matching your search criteria</p>
         </div>
       )}
 
