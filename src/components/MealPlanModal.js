@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { FiX, FiCalendar, FiClock, FiShoppingBag } from 'react-icons/fi';
+import { FiX, FiCalendar, FiClock, FiShoppingBag, FiList } from 'react-icons/fi';
 
 const MealPlanModal = ({ mealPlan, onClose }) => {
     const [aggregatedIngredients, setAggregatedIngredients] = useState({});
-    const [activeTab, setActiveTab] = useState('plan'); // 'plan' or 'shopping'
 
     useEffect(() => {
         if (mealPlan && mealPlan.comidas) {
@@ -63,105 +62,69 @@ const MealPlanModal = ({ mealPlan, onClose }) => {
                             {mealPlan.comidas?.length || 0} meals
                         </span>
                     </div>
-
-                    {/* Tab Navigation */}
-                    <div className="flex mt-6 border-b border-gray-200">
-                        <button
-                            className={`px-4 py-2 font-medium text-sm ${
-                                activeTab === 'plan'
-                                    ? 'text-[#28a745] border-b-2 border-[#28a745]'
-                                    : 'text-gray-500 hover:text-[#28a745]'
-                            }`}
-                            onClick={() => setActiveTab('plan')}
-                        >
-                            Meal Plan
-                        </button>
-                        <button
-                            className={`px-4 py-2 font-medium text-sm ${
-                                activeTab === 'shopping'
-                                    ? 'text-[#28a745] border-b-2 border-[#28a745]'
-                                    : 'text-gray-500 hover:text-[#28a745]'
-                            }`}
-                            onClick={() => setActiveTab('shopping')}
-                        >
-                            Shopping List
-                        </button>
-                    </div>
                 </div>
 
                 {/* Content Section */}
                 <div className="modal-body">
-                    {activeTab === 'plan' ? (
-                        // Meal Plan View
-                        <div className="space-y-6">
+                    {/* Meal Plan Section */}
+                    <div className="modal-section">
+                        <h3 className="modal-section-title">
+                            <FiList />
+                            Meal Plan Schedule
+                        </h3>
+                        <div className="meal-plan-days">
                             {mealPlan.comidas?.map((meal, index) => (
-                                <div key={index} className="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div>
-                                            <h3 className="font-medium text-gray-900">
-                                                {meal.dia} - {meal.tipo_comida}
-                                            </h3>
-                                            <p className="text-lg font-semibold text-[#28a745]">
-                                                {meal.receta?.nombre}
-                                            </p>
-                                        </div>
-                                        <span className="text-sm text-gray-500">
-                                            {meal.receta?.racion} portions
-                                        </span>
+                                <div key={index} className="meal-plan-modal-day">
+                                    <div className="meal-plan-modal-day-title">
+                                        {meal.dia} - {meal.tipo_comida}
                                     </div>
-                                    {meal.receta?.descripcion && (
-                                        <p className="text-gray-600 text-sm mt-2">
-                                            {meal.receta.descripcion}
-                                        </p>
-                                    )}
+                                    <div className="meal-plan-modal-meal">
+                                        <div className="meal-plan-modal-meal-name">
+                                            {meal.receta?.nombre}
+                                        </div>
+                                        {meal.receta?.descripcion && (
+                                            <p className="meal-plan-modal-meal-description">
+                                                {meal.receta.descripcion}
+                                            </p>
+                                        )}
+                                        <div className="meal-plan-modal-meal-portions">
+                                            {meal.receta?.racion} portions
+                                        </div>
+                                    </div>
                                 </div>
                             ))}
                         </div>
-                    ) : (
-                        // Shopping List View
-                        <div>
-                            <div className="flex items-center gap-2 mb-4">
-                                <FiShoppingBag className="text-[#28a745] w-5 h-5" />
-                                <h3 className="text-lg font-medium text-gray-900">
-                                    Shopping List
-                                </h3>
-                            </div>
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-100">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Ingredient
-                                            </th>
-                                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Amount
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Unit
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
-                                        {Object.values(aggregatedIngredients)
-                                            .sort((a, b) => a.ingrediente.localeCompare(b.ingrediente))
-                                            .map((ing, index) => (
-                                                <tr key={index} className="hover:bg-gray-50">
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                        {ing.ingrediente}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                                                        {ing.cantidad_total}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {ing.unidad}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                    </div>
+
+                    {/* Shopping List Section */}
+                    <div className="modal-section">
+                        <h3 className="modal-section-title">
+                            <FiShoppingBag />
+                            Shopping List
+                        </h3>
+                        <div className="shopping-list-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Ingredient</th>
+                                        <th className="text-right">Amount</th>
+                                        <th>Unit</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {Object.values(aggregatedIngredients)
+                                        .sort((a, b) => a.ingrediente.localeCompare(b.ingrediente))
+                                        .map((ing, index) => (
+                                            <tr key={index}>
+                                                <td>{ing.ingrediente}</td>
+                                                <td className="text-right">{ing.cantidad_total}</td>
+                                                <td>{ing.unidad}</td>
+                                            </tr>
+                                        ))}
+                                </tbody>
+                            </table>
                         </div>
-                    )}
+                    </div>
                 </div>
             </div>
         </div>
