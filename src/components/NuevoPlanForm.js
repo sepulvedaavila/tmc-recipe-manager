@@ -92,23 +92,27 @@ function NuevoPlanForm() {
         
         // Format the data for the backend
         const formattedData = {
-            nombre: planData.nombre,
-            cliente: planData.cliente,
-            racion: planData.racion,
-            recetas: planData.recetas.map(receta => ({
-                dia_semana: receta.dia_semana,
-                id_soup: receta.id_soup,
-                id_main: receta.id_main,
-                id_side: receta.id_side
-            }))
+            nombre_plan: planData.nombre,
+            cliente: 1, // Default value as per the API structure
+            racion: parseInt(planData.racion),
+            recetas: planData.recetas
+                .filter(receta => receta.dia_semana && (receta.id_soup || receta.id_main || receta.id_side))
+                .map(receta => ({
+                    dia_semana: receta.dia_semana,
+                    id_soup: receta.id_soup ? parseInt(receta.id_soup) : null,
+                    id_main: receta.id_main ? parseInt(receta.id_main) : null,
+                    id_side: receta.id_side ? parseInt(receta.id_side) : null
+                }))
         };
 
         console.log('Sending plan data:', formattedData);
 
         try {
-            const response = await fetch('./api/plans', {
+            const response = await fetch('/api/plans', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify(formattedData),
             });
 

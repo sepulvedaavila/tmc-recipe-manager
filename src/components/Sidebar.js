@@ -1,40 +1,70 @@
 // src/components/Sidebar.js
-import { NavLink } from 'react-router-dom';
-import { useState } from 'react';
-import { FiMenu, FiX, FiHome, FiBook, FiCalendar, FiSettings, FiPlusCircle, FiList, FiFilePlus } from 'react-icons/fi';
+import React from 'react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
+import { FiMenu, FiBook, FiCalendar, FiPlusCircle, FiHome, FiFilePlus, FiList, FiSettings } from 'react-icons/fi';
 
-export default function Sidebar() {
-  const [isOpen, setIsOpen] = useState(true);
+const Sidebar = ({ isOpen, toggleSidebar }) => {
+    const location = useLocation();
 
-  return (
-    <div className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
-      <button className="toggle-btn" onClick={() => setIsOpen(!isOpen)}>
-        {isOpen ? <FiX /> : <FiMenu />}
-      </button>
-      
-      <nav>
-        <NavLink to="/" className="nav-item">
-          <FiHome /> {isOpen && 'Home'}
-        </NavLink>
-        <NavLink to="/recipes" className="nav-item">
-          <FiBook /> {isOpen && 'Recipes'}
-        </NavLink>
-        <NavLink to="/meal-plan" className="nav-item">
-          <FiCalendar /> {isOpen && 'Meal Plans'}
-        </NavLink>
-        <NavLink to="/new-recipe" className="nav-item">
-          <FiPlusCircle /> {isOpen && 'Nueva Receta'}
-        </NavLink>
-        <NavLink to="/new-plan" className="nav-item">
-          <FiFilePlus /> {isOpen && 'Nuevo Plan'}
-        </NavLink>
-        <NavLink to="/menu" className="nav-item">
-          <FiList /> {isOpen && 'Menú'}
-        </NavLink>
-        <NavLink to="/settings" className="nav-item">
-          <FiSettings /> {isOpen && 'Settings'}
-        </NavLink>
-      </nav>
-    </div>
-  );
+    return (
+        <div className={`sidebar ${!isOpen ? 'closed' : ''}`}>
+            <button onClick={toggleSidebar} className="toggle-btn">
+                <FiMenu size={24} />
+            </button>
+            
+            <nav>
+                <NavLink
+                    to="/"
+                    className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                >
+                    <FiHome className="mr-2" />
+                    {isOpen && <span>Home</span>}
+                </NavLink>
+                <NavLink
+                    to="/recipes"
+                    className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                >
+                    <FiBook className="mr-2" />
+                    {isOpen && <span>Recipes</span>}
+                </NavLink>
+                <NavLink
+                    to="/new-recipe"
+                    className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                >
+                    <FiPlusCircle className="mr-2" />
+                    {isOpen && <span>New Recipe</span>}
+                </NavLink>
+                <NavLink
+                    to="/meal-plans"
+                    className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                >
+                    <FiCalendar className="mr-2" />
+                    {isOpen && <span>Meal Plans</span>}
+                </NavLink>
+                <NavLink
+                    to="/new-plan"
+                    className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                >
+                    <FiFilePlus className="mr-2" />
+                    {isOpen && <span>New Plan</span>}
+                </NavLink>
+                <NavLink
+                    to="/menu"
+                    className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                >
+                    <FiList className="mr-2" />
+                    {isOpen && <span>Menu</span>}
+                </NavLink>
+                <NavLink
+                    to="/settings"
+                    className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                >
+                    <FiSettings className="mr-2" />
+                    {isOpen && <span>Settings</span>}
+                </NavLink>
+            </nav>
+        </div>
+    );
 };
+
+export default Sidebar;

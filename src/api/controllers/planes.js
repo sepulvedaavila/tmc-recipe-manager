@@ -49,6 +49,7 @@ const getPlans = async (req, res, next) => {
 
 const postPlan = async (req, res) => {
     let connection;
+    //console.log('Received request:', req);
     try {
         const plan = req.body;
         console.log('Received plan data:', plan);
@@ -60,7 +61,7 @@ const postPlan = async (req, res) => {
         // Insert plan
         const [planResult] = await connection.execute(
             'INSERT INTO planes (nombre_plan, cliente, racion) VALUES (?, ?, ?)',
-            [plan.nombre, plan.cliente, plan.racion]
+            [plan.nombre_plan, plan.cliente, plan.racion]
         );
         const planId = planResult.insertId;
 
