@@ -7,10 +7,18 @@ const dbConfig = {
     database: 'recipe_plan'
 };
 
+var aws_connection = mysql.createConnection({
+    host     : "recipe-plan.cz0oeookwe7h.us-east-2.rds.amazonaws.com",
+    user     : process.env.RDS_USERNAME,
+    password : process.env.RDS_PASSWORD,
+    port     : 3306
+  });
+
 
 const createConnection = async () => {
     try {
-        const connection = await mysql.createConnection(dbConfig);
+        const connection = await mysql.createConnection(aws_connection);
+        //const connection = await mysql.createConnection(dbConfig);
         console.log('Connected to the database');
         return connection;
     } catch (err) {
