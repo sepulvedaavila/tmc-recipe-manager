@@ -17,8 +17,8 @@ var aws_connection = mysql.createConnection({
 
 const createConnection = async () => {
     try {
-        const connection = await mysql.createConnection(aws_connection);
-        //const connection = await mysql.createConnection(dbConfig);
+        //const connection = await mysql.createConnection(aws_connection);
+        const connection = await mysql.createConnection(dbConfig);
         console.log('Connected to the database');
         return connection;
     } catch (err) {
