@@ -27,7 +27,7 @@ const getPlans = async (req, res, next) => {
                     pr.id_soup,
                     pr.id_main,
                     pr.id_side
-                FROM plan_recetas pr
+                FROM Plan_Recetas pr
                 WHERE pr.id_plan = ?
             `, [plan.id_plan]);
 
@@ -60,14 +60,14 @@ const postPlan = async (req, res) => {
 
         // Insert plan
         const [planResult] = await connection.execute(
-            'INSERT INTO planes (nombre_plan, cliente, racion) VALUES (?, ?, ?)',
+            'INSERT INTO Planes (nombre_plan, cliente, racion) VALUES (?, ?, ?)',
             [plan.nombre_plan, plan.cliente, plan.racion]
         );
         const planId = planResult.insertId;
 
         // Insert recipes for the plan
         const recipeInsertQuery = 
-            'INSERT INTO plan_recetas (id_plan, dia_semana, id_soup, id_main, id_side) VALUES (?, ?, ?, ?, ?)';
+            'INSERT INTO Plan_Recetas (id_plan, dia_semana, id_soup, id_main, id_side) VALUES (?, ?, ?, ?, ?)';
 
         // Insert each day's recipes
         if (Array.isArray(plan.recetas)) {

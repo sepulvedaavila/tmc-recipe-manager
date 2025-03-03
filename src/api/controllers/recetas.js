@@ -17,8 +17,8 @@ const getRecipes = async (req, res, next) => {
       r.tipo_platillo,
       r.descripcion,
       GROUP_CONCAT(...) AS ingredientes 
-    FROM recetas r
-    LEFT JOIN ingredientes i ON r.id_receta = i.id_receta
+    FROM Recetas r
+    LEFT JOIN Ingredientes i ON r.id_receta = i.id_receta
   `;
 
     const whereClauses = [];
@@ -92,8 +92,8 @@ const getRecipes = async (req, res, next) => {
                         i.cantidad_total
                     ) SEPARATOR ';;;'
                 ) AS ingredientes 
-            FROM recetas r 
-            LEFT JOIN ingredientes i ON r.id_receta = i.id_receta 
+            FROM Recetas r 
+            LEFT JOIN Ingredientes i ON r.id_receta = i.id_receta 
             GROUP BY r.id_receta
             ORDER BY r.nombre ASC
         `);
@@ -154,7 +154,7 @@ const postRecipe = async (req, res, next) => {
         await connection.beginTransaction();
 
         const [recipeResult] = await connection.execute(
-            'INSERT INTO recetas (nombre, fuente, tipo_platillo, racion, descripcion, tags) VALUES (?, ?, ?, ?, ?, ?)',
+            'INSERT INTO Recetas (nombre, fuente, tipo_platillo, racion, descripcion, tags) VALUES (?, ?, ?, ?, ?, ?)',
             [receta.titulo, receta.fuente, receta.tipoPlatillo, receta.racion, receta.descripcion, receta.tags]
         );
 
