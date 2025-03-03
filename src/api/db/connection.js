@@ -1,7 +1,7 @@
 const mysql = require('mysql2/promise');
 
 const dbConfig = {
-    host: 'localhost',
+    host: 'recipe-plan.cz0oeookwe7h.us-east-2.rds.amazonaws.com',
     user: 'tmc-app-user',
     password: 'hYdmyj-qohcab-1povvu',
     database: 'recipe_plan'
@@ -9,8 +9,8 @@ const dbConfig = {
 
 var aws_connection = mysql.createConnection({
     host     : "recipe-plan.cz0oeookwe7h.us-east-2.rds.amazonaws.com",
-    user     : process.env.RDS_USERNAME,
-    password : process.env.RDS_PASSWORD,
+    user     : "tmc-app-user",
+    password : "hYdmyj-qohcab-1povvu",
     port     : 3306
   });
 
