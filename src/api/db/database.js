@@ -15,7 +15,7 @@ const pool2 = mysql.createPool({
 const pool = mysql.createPool({
   host: 'recipe-plan.cz0oeookwe7h.us-east-2.rds.amazonaws.com',
   user: 'tmc-app-user',
-  password: 'hYdmyj-qohcab-1povvu',
+  password: 'tmc-app-user',
   database: 'recipe_plan',
   waitForConnections: true,
   connectionLimit: 10,

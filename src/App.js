@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import './styles/form.css';
+import './styles/NuevaRecetaForm.css';
 import { Search, Mic, Camera, Upload, Clock, Calendar, ChefHat, ShoppingBag, Heart, Bell, Menu, X, User } from 'lucide-react';
 
 //import Home from './components/Home';

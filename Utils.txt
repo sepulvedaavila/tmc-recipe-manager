@@ -1,0 +1,47 @@
+ARN Lambda
+arn:aws:iam::522814693169:role/vercel-rds-access
+
+ARN Lambda function 
+arn:aws:lambda:us-east-2:522814693169:function:tmc-rds-auth-token-generator
+
+rds-auth-generator
+tmc-rds-auth-token-generator (Lambda)
+
+Routes
+ANY /tmc-rds-auth-token-generator → tmc-rds-auth-token-generator (Lambda)
+arn:aws:apigateway:us-east-2::/apis/r4yqqpd5g5/routes/i403bjr
+POST /token → tmc-rds-auth-token-generator (Lambda)
+arn:aws:apigateway:us-east-2::/apis/r4yqqpd5g5/routes/1ygu8vr
+$default (Auto-deploy: enabled)  
+https://r4yqqpd5g5.execute-api.us-east-2.amazonaws.com
+
+
+curl -X POST https://r4yqqpd5g5.execute-api.us-east-2.amazonaws.com/token \
+  -H "Content-Type: application/json"
+
+
+mysql 
+-h recipe-plan.cz0oeookwe7h.us-east-2.rds.amazonaws.com 
+-P 3306 
+-u admin 
+-p 
+--default-auth=caching_sha2_password
+
+mysql -h recipe-plan.cz0oeookwe7h.us-east-2.rds.amazonaws.com -P 3306 -u tmc-app-user -p --default-auth=caching_sha2_password
+
+hYdmyj-qohcab-1povvu
+
+Proxy Secret
+tmc-app-user
+arFmyj-Hohcab-1iqmp
+
+
+
+mongodb+srv://tmc-app-mgr:db-tmc-App-PWD2@cluster0.wbsaj.mongodb.net/
+
+
+GRANT RELOAD, FLUSH_TABLES ON *.* TO 'tmc-app-user'@'%';
+GRANT LOCK TABLES ON recipe_plan.* TO 'tmc-app-user'@'%';
+GRANT SUPER, REPLICATION CLIENT ON *.* TO 'admin'@'%';
+
+SHOW GRANTS FOR 'tmc-app-user'@'%';
