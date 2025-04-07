@@ -24,6 +24,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "start:server": "node src/api/server.js",
+    "dev": "concurrently \"npm run start\" \"npm run start:server\"",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -47,8 +49,9 @@
     ]
   },
   "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "concurrently": "^9.1.2",
     "web-vitals": "^4.2.4"
   },
-  "proxy": "http://localhost:3001"
+  "proxy": "http://localhost:5000"
 }

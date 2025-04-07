@@ -4,13 +4,15 @@ import { FiX, FiUser, FiTag, FiClock, FiBookOpen, FiChevronDown, FiChevronUp } f
 const RecipeModal = ({ recipe, onClose }) => {
     const [isIngredientsOpen, setIsIngredientsOpen] = useState(true);
     
+    // Log recipe data for debugging - Must be called before conditionals
+    useEffect(() => {
+      if (recipe) {
+        console.log('RecipeModal received:', recipe);
+      }
+    }, [recipe]);
+    
     // Safety check for missing recipe
     if (!recipe) return null;
-    
-    // Log recipe data for debugging
-    useEffect(() => {
-      console.log('RecipeModal received:', recipe);
-    }, [recipe]);
 
     // Close modal when clicking outside
     const handleOverlayClick = (e) => {
