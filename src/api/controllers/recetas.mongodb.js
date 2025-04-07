@@ -76,7 +76,9 @@ const getRecipes = async (req, res, next) => {
         // Log successful response
         console.log(`Found ${formattedRecipes.length} recipes`);
         
-        res.json(formattedRecipes);
+        // Return in the format expected by the frontend (which was used with MySQL)
+        // The frontend expects { recipeResult: [...] }
+        res.json({ recipeResult: formattedRecipes });
     } catch (error) {
         // Detailed error logging
         console.error('Error fetching recipes:', error);

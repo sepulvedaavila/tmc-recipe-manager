@@ -17,8 +17,10 @@ const Recipes = () => {
         
         console.log('API Response:', data);
         
-        // API now returns the data directly as an array, not wrapped in recipeResult
-        const recipesArray = data.map((recipe) => {
+        // Check if we have recipeResult (MySQL format) or direct array (MongoDB format)
+        const recipeData = data.recipeResult || data;
+        
+        const recipesArray = recipeData.map((recipe) => {
           return { 
             id: recipe.recipe_id, 
             nombre: recipe.nombre, 
