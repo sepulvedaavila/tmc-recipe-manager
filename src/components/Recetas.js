@@ -14,11 +14,23 @@ const Recipes = () => {
         const response = await fetch('./api/recipes');
         if (!response.ok) throw new Error('Failed to fetch recipes');
         const data = await response.json();
-
-        const recipesArray = data.recipeResult.map((recipe) => {
-          return { id: recipe.id_receta, nombre: recipe.nombre, descripcion: recipe.descripcion, racion: recipe.racion, tags: recipe.tags };
+        
+        console.log('API Response:', data);
+        
+        // API now returns the data directly as an array, not wrapped in recipeResult
+        const recipesArray = data.map((recipe) => {
+          return { 
+            id: recipe.recipe_id, 
+            nombre: recipe.nombre, 
+            descripcion: recipe.descripcion, 
+            racion: recipe.racion, 
+            tags: recipe.tags,
+            tipo_platillo: recipe.tipo_platillo,
+            fuente: recipe.fuente,
+            ingredientes: recipe.ingredientes || []
+          };
         });
-        console.log(recipesArray);
+        console.log('Processed recipes:', recipesArray);
         setRecipes(recipesArray);
       } catch (error) {
         console.error('Error fetching recipes:', error);
