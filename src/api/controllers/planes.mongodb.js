@@ -1,5 +1,6 @@
 const Plan = require('../models/Plan');
 const Receta = require('../models/Receta');
+const PlanReceta = require('../models/PlanReceta');
 
 const getPlanes = async (req, res, next) => {
     try {
@@ -28,12 +29,50 @@ const getPlanById = async (req, res, next) => {
             return res.status(404).json({ message: 'Plan no encontrado' });
         }
         
-        // Get recipes associated with this plan
-        const recetas = await Receta.find({ plan: plan._id });
+        // Get planRecetas associated with this plan
+        const planRecetas = await PlanReceta.find({ idPlan: plan.idPlan });
+        
+        // For each planReceta, get the associated recipe details
+        const detailedPlanRecetas = await Promise.all(
+            planRecetas.map(async (planReceta) => {
+                // Get recipe details if present
+                let receta = null;
+                if (planReceta.idReceta) {
+                    receta = await Receta.findOne({ idReceta: planReceta.idReceta });
+                }
+                
+                // Get soup details if present
+                let soup = null;
+                if (planReceta.idSoup) {
+                    soup = await Receta.findOne({ idReceta: planReceta.idSoup });
+                }
+                
+                // Get main dish details if present
+                let main = null;
+                if (planReceta.idMain) {
+                    main = await Receta.findOne({ idReceta: planReceta.idMain });
+                }
+                
+                // Get side dish details if present
+                let side = null;
+                if (planReceta.idSide) {
+                    side = await Receta.findOne({ idReceta: planReceta.idSide });
+                }
+                
+                return {
+                    ...planReceta.toObject(),
+                    receta: receta ? receta.toObject() : null,
+                    soup: soup ? soup.toObject() : null,
+                    main: main ? main.toObject() : null,
+                    side: side ? side.toObject() : null,
+                    diaSemana: planReceta.diaSemana
+                };
+            })
+        );
         
         res.json({
             ...plan.toObject(),
-            recetas
+            planRecetas: detailedPlanRecetas
         });
     } catch (error) {
         console.error('Error fetching plan:', error);

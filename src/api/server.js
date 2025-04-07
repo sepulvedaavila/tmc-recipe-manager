@@ -5,6 +5,7 @@ const recetasRoutes = require('./routes/recetas');
 const planesRoutes = require('./routes/planes');
 const clientesRoutes = require('./routes/clientes');
 const mealPlansRoutes = require('./routes/mealplans');
+const planRecetasRoutes = require('./routes/planRecetas');
 
 // Initialize express
 const app = express();
@@ -21,6 +22,7 @@ app.use('/api/recipes', recetasRoutes);
 app.use('/api/planes', planesRoutes);
 app.use('/api/clientes', clientesRoutes);
 app.use('/api/mealplans', mealPlansRoutes);
+app.use('/api/plan-recetas', planRecetasRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
