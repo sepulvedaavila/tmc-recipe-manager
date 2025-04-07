@@ -3,9 +3,7 @@ const cors = require('cors');
 const connectDB = require('./db/mongodb');
 const recetasRoutes = require('./routes/recetas');
 const planesRoutes = require('./routes/planes');
-
-//const recetas = require('./recetas').default;
-//const consts = require('./api/consts').default;
+const clientesRoutes = require('./routes/clientes');
 
 // Initialize express
 const app = express();
@@ -20,6 +18,7 @@ app.use(express.json());
 // Routes
 app.use('/api/recipes', recetasRoutes);
 app.use('/api/planes', planesRoutes);
+app.use('/api/clientes', clientesRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
