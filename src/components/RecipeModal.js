@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FiX, FiUser, FiTag, FiClock, FiBookOpen, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 
 const RecipeModal = ({ recipe, onClose }) => {
     const [isIngredientsOpen, setIsIngredientsOpen] = useState(true);
     
+    // Safety check for missing recipe
     if (!recipe) return null;
+    
+    // Log recipe data for debugging
+    useEffect(() => {
+      console.log('RecipeModal received:', recipe);
+    }, [recipe]);
 
     // Close modal when clicking outside
     const handleOverlayClick = (e) => {

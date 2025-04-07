@@ -25,12 +25,33 @@ const RecipeList = () => {
     const fetchRecipes = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('/api/recipes');
-        setRecipes(response.data);
+        // Add explicit error handling and logging
+        const response = await axios.get('/api/recipes', {
+          // Handle 401 errors with better logging
+          validateStatus: function (status) {
+            if (status === 401) {
+              console.error('Authentication error (401): Not authorized to access recipes');
+              return false; // This will trigger the catch block
+            }
+            return status >= 200 && status < 300; // Default
+          }
+        });
+        
+        console.log('Recipe API response:', response.data);
+        
+        // Make sure we have an array
+        if (Array.isArray(response.data)) {
+          setRecipes(response.data);
+        } else {
+          console.error('API did not return an array:', response.data);
+          setRecipes([]); // Set empty array to prevent filter errors
+        }
+        
         setError(null);
       } catch (err) {
-        setError(err.message);
         console.error('Error fetching recipes:', err);
+        setRecipes([]); // Set empty array to prevent filter errors
+        setError(err.message || 'Failed to fetch recipes');
       } finally {
         setLoading(false);
       }
@@ -39,20 +60,30 @@ const RecipeList = () => {
     fetchRecipes();
   }, []);
 
-  // Filter recipes based on all search criteria
-  const filteredRecipes = recipes.filter(recipe => {
-    const nameMatch = recipe.nombre.toLowerCase().includes(searchTerm.toLowerCase());
-    const sourceMatch = sourceSearch 
-      ? recipe.fuente?.toLowerCase().includes(sourceSearch.toLowerCase())
-      : true;
-    const ingredientMatch = ingredientSearch
-      ? recipe.ingredientes?.some(ing => 
-          ing.ingrediente.toLowerCase().includes(ingredientSearch.toLowerCase())
-        )
-      : true;
+  // Filter recipes based on all search criteria with null checks
+  const filteredRecipes = recipes && Array.isArray(recipes) 
+    ? recipes.filter(recipe => {
+        // Skip recipes with missing required fields
+        if (!recipe || !recipe.nombre) return false;
+        
+        // Match by name
+        const nameMatch = recipe.nombre.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        // Match by source with null safety
+        const sourceMatch = !sourceSearch || (recipe.fuente && recipe.fuente.toLowerCase().includes(sourceSearch.toLowerCase()));
+        
+        // Match by ingredient with null safety
+        const ingredientMatch = !ingredientSearch || (
+          recipe.ingredientes && 
+          Array.isArray(recipe.ingredientes) && 
+          recipe.ingredientes.some(ing => 
+            ing && ing.ingrediente && ing.ingrediente.toLowerCase().includes(ingredientSearch.toLowerCase())
+          )
+        );
 
-    return nameMatch && sourceMatch && ingredientMatch;
-  });
+        return nameMatch && sourceMatch && ingredientMatch;
+      })
+    : []; // Return empty array if recipes is not an array
 
   const clearFilters = () => {
     setSearchTerm('');
