@@ -22,7 +22,7 @@ const mealPlanSchema = new mongoose.Schema({
     },
     recipeId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Recipe',
+      ref: 'Receta',
     },
     name: {
       type: String,
