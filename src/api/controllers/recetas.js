@@ -1,4 +1,4 @@
-const createConnection = require('../db/connection'); // Import the database connection
+//const createConnection = require('../db/connection'); // Import the database connection
 const pool = require('../db/database'); // Path to your database.js
 
 

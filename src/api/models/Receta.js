@@ -22,14 +22,14 @@ const ingredienteSchema = new mongoose.Schema({
 const recetaSchema = new mongoose.Schema({
   nombre: {
     type: String,
-    required: true,
+required: true,
     index: true
   },
   fuente: {
     type: String,
     default: ''
   },
-  tipoPlatillo: {
+tipoPlatillo: {
     type: String,
     required: true,
     index: true
@@ -39,11 +39,12 @@ const recetaSchema = new mongoose.Schema({
     required: true,
     default: 4
   },
+
   descripcion: {
     type: String,
     required: true
   },
-  tags: {
+tags: {
     type: [String],
     default: []
   },

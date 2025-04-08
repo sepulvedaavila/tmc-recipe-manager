@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
 import RecipeModal from './RecipeModal';
-import { FiSearch, FiFilter, FiX, FiSliders } from 'react-icons/fi';
+import { FiSearch, FiX, FiSliders } from 'react-icons/fi';
 
 const RecipeList = () => {
   const [recipes, setRecipes] = useState([]);
@@ -13,20 +12,30 @@ const RecipeList = () => {
   const [error, setError] = useState(null);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState({
-    dishTypes: ['Soup', 'Main Course', 'Side Dish'],
-    minPortions: '',
-    maxPortions: '',
-    hasIngredients: false
-  });
 
   // Fetch recipes
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('/api/recipes');
-        setRecipes(response.data);
+
+        // Direct URL to /api/recipes for recipes endpoint
+        const apiUrl = '/api/recipes';
+        
+        console.log('Fetching recipes from:', apiUrl);
+        const response = await axios.get(apiUrl);
+        console.log('Recipe API response:', response.data);
+        
+        // Handle both formats - either direct array or wrapped in recipeResult
+        const recipeData = response.data.recipeResult || response.data;
+        
+        // Ensure we always have an array to work with
+        if (Array.isArray(recipeData)) {
+          setRecipes(recipeData);
+        } else {
+          console.error('API did not return an array:', response.data);
+          setRecipes([]); // Set empty array to prevent filter errors
+        }
         setError(null);
       } catch (err) {
         setError(err.message);
@@ -39,20 +48,30 @@ const RecipeList = () => {
     fetchRecipes();
   }, []);
 
-  // Filter recipes based on all search criteria
-  const filteredRecipes = recipes.filter(recipe => {
-    const nameMatch = recipe.nombre.toLowerCase().includes(searchTerm.toLowerCase());
-    const sourceMatch = sourceSearch 
-      ? recipe.fuente?.toLowerCase().includes(sourceSearch.toLowerCase())
-      : true;
-    const ingredientMatch = ingredientSearch
-      ? recipe.ingredientes?.some(ing => 
-          ing.ingrediente.toLowerCase().includes(ingredientSearch.toLowerCase())
-        )
-      : true;
+  // Filter recipes based on all search criteria with null safety
+  const filteredRecipes = Array.isArray(recipes) 
+    ? recipes.filter(recipe => {
+        // Skip recipes with missing required fields
+        if (!recipe || !recipe.nombre) return false;
+        
+        // Match by name (with null safety)
+        const nameMatch = recipe.nombre?.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        // Match by source with null safety
+        const sourceMatch = !sourceSearch || (recipe.fuente && recipe.fuente.toLowerCase().includes(sourceSearch.toLowerCase()));
+        
+        // Match by ingredient with null safety
+        const ingredientMatch = !ingredientSearch || (
+          recipe.ingredientes && 
+          Array.isArray(recipe.ingredientes) && 
+          recipe.ingredientes.some(ing => 
+            ing && ing.ingrediente && ing.ingrediente.toLowerCase().includes(ingredientSearch.toLowerCase())
+          )
+        );
 
-    return nameMatch && sourceMatch && ingredientMatch;
-  });
+        return nameMatch && sourceMatch && ingredientMatch;
+      })
+    : []; // Return empty array if recipes is not an array
 
   const clearFilters = () => {
     setSearchTerm('');

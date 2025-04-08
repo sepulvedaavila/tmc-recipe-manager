@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FiX, FiUser, FiTag, FiClock, FiBookOpen, FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { FiX, FiUser, FiTag, FiBookOpen, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 
 const RecipeModal = ({ recipe, onClose }) => {
     const [isIngredientsOpen, setIsIngredientsOpen] = useState(true);

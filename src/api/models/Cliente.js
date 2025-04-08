@@ -2,8 +2,7 @@ const mongoose = require('mongoose');
 
 const clienteSchema = new mongoose.Schema({
   nombre: {
-    type: String,
-    required: true,
+    type: String,required: true,
     index: true
   },
   telefono: {

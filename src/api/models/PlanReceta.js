@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const planRecetaSchema = new mongoose.Schema({
   idPlanReceta: {
-    type: Number,
+type: Number,
     sparse: true
   },
   idPlan: {
@@ -46,5 +46,4 @@ const planRecetaSchema = new mongoose.Schema({
 
 // Create compound index for plan+day combination
 planRecetaSchema.index({ idPlan: 1, diaSemana: 1 });
-
 module.exports = mongoose.model('PlanReceta', planRecetaSchema, 'planRecetas');

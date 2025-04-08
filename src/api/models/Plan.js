@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const planSchema = new mongoose.Schema({
   cliente: {
     type: Number,
-    required: true,
+required: true,
     index: true
   },
   racion: {
@@ -12,7 +12,7 @@ const planSchema = new mongoose.Schema({
     default: 4
   },
   idPlan: {
-    type: Number,
+type: Number,
     sparse: true
   },
   nombrePlan: {
@@ -23,7 +23,7 @@ const planSchema = new mongoose.Schema({
   fechaCreacion: {
     type: Date,
     default: Date.now
-  },
+},
   updatedAt: {
     type: Date,
     default: Date.now

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './card-components';
-import { FiCalendar, FiUser, FiUsers, FiEdit2, FiTrash2, FiPlus } from 'react-icons/fi';
-import { Link } from 'react-router-dom';
+import { FiCalendar, FiUser, FiUsers, FiEdit2, FiTrash2 } from 'react-icons/fi';
+//import { Link } from 'react-router-dom';
 
 const Planes = () => {
     const [plans, setPlans] = useState([]);
