@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
 import RecipeModal from './RecipeModal';
-import { FiSearch, FiFilter, FiX, FiSliders } from 'react-icons/fi';
+import { FiSearch, FiX, FiSliders } from 'react-icons/fi';
 
 const RecipeList = () => {
   const [recipes, setRecipes] = useState([]);
@@ -13,12 +12,6 @@ const RecipeList = () => {
   const [error, setError] = useState(null);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState({
-    dishTypes: ['Soup', 'Main Course', 'Side Dish'],
-    minPortions: '',
-    maxPortions: '',
-    hasIngredients: false
-  });
 
   // Fetch recipes
   useEffect(() => {

@@ -71,14 +71,12 @@ const WeeklyPlanner = () => {
     try {
       // Find the meal in the current plan
       let mealToEdit = null;
-      let mealDay = null;
       
       // Search through all days to find the meal
       Object.entries(weeklyPlan).forEach(([day, dayData]) => {
         const found = dayData.meals?.find(meal => meal.id === mealId);
         if (found) {
           mealToEdit = found;
-          mealDay = day;
         }
       });
 
