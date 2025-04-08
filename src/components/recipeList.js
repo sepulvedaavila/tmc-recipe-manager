@@ -25,8 +25,22 @@ const RecipeList = () => {
     const fetchRecipes = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('/api/recipes');
-        setRecipes(response.data);
+        // Direct URL to /api/recipes for recipes endpoint
+        const apiUrl = '/api/recipes';
+        console.log('Fetching recipes from:', apiUrl);
+        const response = await axios.get(apiUrl);
+        console.log('Recipe API response:', response.data);
+        
+        // Handle both formats - either direct array or wrapped in recipeResult
+        const recipeData = response.data.recipeResult || response.data;
+        
+        // Ensure we always have an array to work with
+        if (Array.isArray(recipeData)) {
+          setRecipes(recipeData);
+        } else {
+          console.error('API did not return an array:', response.data);
+          setRecipes([]); // Set empty array to prevent filter errors
+        }
         setError(null);
       } catch (err) {
         setError(err.message);

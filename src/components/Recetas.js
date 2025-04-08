@@ -11,14 +11,26 @@ const Recipes = () => {
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
-        const response = await fetch('./api/recipes');
+        // Use direct URL path
+        const apiUrl = '/api/recipes';
+        console.log('Fetching recipes from:', apiUrl);
+        const response = await fetch(apiUrl);
         if (!response.ok) throw new Error('Failed to fetch recipes');
         const data = await response.json();
         
         console.log('API Response:', data);
         
-        // API now returns the data directly as an array, not wrapped in recipeResult
-        const recipesArray = data.map((recipe) => {
+        // Check if we have recipeResult (MongoDB format) or direct array
+        const recipeData = data.recipeResult || data;
+        
+        if (!Array.isArray(recipeData)) {
+          console.error('API did not return an array:', data);
+          setRecipes([]);
+          setLoading(false);
+          return;
+        }
+        
+        const recipesArray = recipeData.map((recipe) => {
           return { 
             id: recipe.recipe_id, 
             nombre: recipe.nombre, 
