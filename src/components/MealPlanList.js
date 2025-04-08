@@ -4,7 +4,7 @@ import MealPlanModal from './MealPlanModal';
 
 const MealPlanList = () => {
     const [mealPlans, setMealPlans] = useState([]);
-    const [recipes, setRecipes] = useState([]);
+    //const [recipes, setRecipes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedPlan, setSelectedPlan] = useState(null);

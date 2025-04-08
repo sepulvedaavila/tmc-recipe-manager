@@ -98,7 +98,7 @@ const WeeklyPlanner = () => {
     }
   };
 
-  const handleSaveEdit = async (mealId, updatedData) => {
+  /*const handleSaveEdit = async (mealId, updatedData) => {
     try {
       const response = await axios.put(`/api/meal-plans/meals/${mealId}`, updatedData);
       
@@ -120,7 +120,7 @@ const WeeklyPlanner = () => {
       console.error('Error updating meal:', error);
       setError('Error al actualizar la comida');
     }
-  };
+  };*/
 
   const days = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
   const mealTypes = ['Desayuno', 'Almuerzo', 'Cena'];
