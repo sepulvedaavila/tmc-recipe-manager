@@ -11,8 +11,10 @@ const Recipes = () => {
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
-        // Use absolute URL with window.location.origin to ensure correct API endpoint
-        const apiUrl = `${window.location.origin}/api/recipes`;
+
+        // Use direct URL path
+        const apiUrl = '/api/recipes';
+
         console.log('Fetching recipes from:', apiUrl);
         const response = await fetch(apiUrl);
         if (!response.ok) throw new Error('Failed to fetch recipes');
@@ -20,9 +22,19 @@ const Recipes = () => {
         
         console.log('API Response:', data);
         
-        // Check if we have recipeResult (MySQL format) or direct array (MongoDB format)
+
+        // Check if we have recipeResult (MongoDB format) or direct array
         const recipeData = data.recipeResult || data;
         
+        if (!Array.isArray(recipeData)) {
+          console.error('API did not return an array:', data);
+          setRecipes([]);
+          setLoading(false);
+          return;
+        }
+        
+
+
         const recipesArray = recipeData.map((recipe) => {
           return { 
             id: recipe.recipe_id, 

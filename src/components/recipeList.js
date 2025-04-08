@@ -18,8 +18,10 @@ const RecipeList = () => {
     const fetchRecipes = async () => {
       try {
         setLoading(true);
-        // Use absolute URL with window.location.origin to ensure correct API endpoint
-        const apiUrl = `${window.location.origin}/api/recipes`;
+
+        // Direct URL to /api/recipes for recipes endpoint
+        const apiUrl = '/api/recipes';
+        
         console.log('Fetching recipes from:', apiUrl);
         const response = await axios.get(apiUrl);
         console.log('Recipe API response:', response.data);
@@ -34,7 +36,6 @@ const RecipeList = () => {
           console.error('API did not return an array:', response.data);
           setRecipes([]); // Set empty array to prevent filter errors
         }
-        
         setError(null);
       } catch (err) {
         setError(err.message);

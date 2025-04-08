@@ -1,40 +1,32 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "src/api/server.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": { "distDir": "build" }
-    }
-  ],
   "routes": [
     {
       "src": "/api/(.*)",
+
+      "dest": "src/api/server.js",
+      "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET,OPTIONS,PATCH,DELETE,POST,PUT",
+        "Access-Control-Allow-Headers": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization"
+      }
+    },
+    {
+      "src": "/test-recipes",
       "dest": "src/api/server.js"
     },
     {
-      "src": "^/static/(.*)",
-      "dest": "/build/static/$1"
+      "src": "/static/(.*)",
+      "dest": "build/static/$1"
     },
     {
-      "src": "^/favicon.ico",
-      "dest": "/build/favicon.ico"
-    },
-    {
-      "src": "^/manifest.json",
-      "dest": "/build/manifest.json"
-    },
-    {
-      "src": "^/logo(.*).png",
-      "dest": "/build/logo$1.png"
+      "handle": "filesystem"
     },
     {
       "src": "/(.*)",
-      "dest": "/build/index.html"
+      "dest": "build/index.html"
+
     }
   ]
 }

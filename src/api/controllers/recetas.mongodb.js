@@ -6,7 +6,7 @@ const getRecipes = async (req, res, next) => {
     try {
         // Build MongoDB query object (equivalent to WHERE clauses)
         const query = {
-            $lookup:{
+          $lookup:{
                 from: "ingredientes",
                 localField: "idReceta",
                 foreignField: "idReceta",

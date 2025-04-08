@@ -16,10 +16,15 @@ connectDB();
 // Middleware
 // Configure CORS to allow requests from any origin
 app.use(cors({
-  origin: '*', // Allow any origin during development
+  origin: '*', // Allow any origin for API access
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Handle preflight requests
+app.options('*', cors());
+
+// Parse JSON request bodies
 app.use(express.json());
 
 // Routes
@@ -33,6 +38,26 @@ app.use('/api/plan-recetas', planRecetasRoutes);
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'OK', message: 'API is running' });
 });
+
+
+// Explicit recipes endpoint for testing
+app.get('/test-recipes', async (req, res) => {
+  try {
+    const Receta = require('./models/Receta');
+    const recipeResult = await Receta.find({}).limit(10);
+    const count = await Receta.countDocuments();
+    
+    res.status(200).json({ 
+      message: 'Test recipes endpoint',
+      count,
+      recipeResult: recipeResult.map(r => r.toObject()) 
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      message: 'Error in test recipes endpoint', 
+      error: error.message 
+    });
+  }
 
 // Debug endpoint to show all registered routes
 app.get('/api/debug/routes', (req, res) => {
@@ -67,6 +92,7 @@ app.get('/api/debug/routes', (req, res) => {
       MONGODB_URI: process.env.MONGODB_URI ? 'Set (hidden)' : 'Not set'
     }
   });
+
 });
 
 // Error handling middleware
