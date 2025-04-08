@@ -64,8 +64,10 @@ function NuevaRecetaForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
         // Direct URL path for API endpoint
         const apiUrl = '/api/recipes';
+
         console.log('Submitting recipe to:', apiUrl);
         const response = await fetch(apiUrl, {
             method: 'POST',

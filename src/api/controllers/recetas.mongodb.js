@@ -6,12 +6,12 @@ const getRecipes = async (req, res, next) => {
     try {
         // Build MongoDB query object (equivalent to WHERE clauses)
         const query = {
-            $find: {
-                    from: "ingredientes",
-                    localField: "idReceta",
-                    foreignField: "idReceta",
-                    as: "ingredientes"
-                  }
+          $lookup:{
+                from: "ingredientes",
+                localField: "idReceta",
+                foreignField: "idReceta",
+                as: "ingredientes"
+              }
         };
 
         // Search filter
@@ -83,7 +83,9 @@ const getRecipes = async (req, res, next) => {
         // Log successful response
         console.log(`Found ${formattedRecipes.length} recipes`);
         
-        res.json(formattedRecipes);
+        // Return in the format expected by the frontend (which was used with MySQL)
+        // The frontend expects { recipeResult: [...] }
+        res.json({ recipeResult: formattedRecipes });
     } catch (error) {
         // Detailed error logging
         console.error('Error fetching recipes:', error);

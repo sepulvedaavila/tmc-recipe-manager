@@ -71,14 +71,12 @@ const WeeklyPlanner = () => {
     try {
       // Find the meal in the current plan
       let mealToEdit = null;
-      let mealDay = null;
       
       // Search through all days to find the meal
       Object.entries(weeklyPlan).forEach(([day, dayData]) => {
         const found = dayData.meals?.find(meal => meal.id === mealId);
         if (found) {
           mealToEdit = found;
-          mealDay = day;
         }
       });
 
@@ -100,7 +98,7 @@ const WeeklyPlanner = () => {
     }
   };
 
-  const handleSaveEdit = async (mealId, updatedData) => {
+  /*const handleSaveEdit = async (mealId, updatedData) => {
     try {
       const response = await axios.put(`/api/meal-plans/meals/${mealId}`, updatedData);
       
@@ -122,7 +120,7 @@ const WeeklyPlanner = () => {
       console.error('Error updating meal:', error);
       setError('Error al actualizar la comida');
     }
-  };
+  };*/
 
   const days = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
   const mealTypes = ['Desayuno', 'Almuerzo', 'Cena'];

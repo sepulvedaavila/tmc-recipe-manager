@@ -1,19 +1,22 @@
 {
   "version": 2,
-  "regions": ["sfo1"],
   "builds": [
     {
       "src": "src/api/server.js",
       "use": "@vercel/node"
     },
     {
-      "src": "build/**",
-      "use": "@vercel/static"
+
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "build" }
+
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
+
       "dest": "src/api/server.js",
       "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       "headers": {
@@ -36,6 +39,7 @@
     {
       "src": "/(.*)",
       "dest": "build/index.html"
+
     }
   ]
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Mic, Camera, Upload, Clock, Calendar, ChefHat, ShoppingBag, Heart, Bell, Menu, X, User } from 'lucide-react';
+import { Search, Camera, ChefHat, Mic, Upload, Bell } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './card-components';
 
 const MenuWebsite = () => {

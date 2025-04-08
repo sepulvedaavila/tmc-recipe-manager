@@ -25,7 +25,7 @@ app.use(cors({
 app.options('*', cors());
 
 // Parse JSON request bodies
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json());
 
 // Routes
 app.use('/api/recipes', recetasRoutes);
@@ -38,6 +38,7 @@ app.use('/api/plan-recetas', planRecetasRoutes);
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'OK', message: 'API is running' });
 });
+
 
 // Explicit recipes endpoint for testing
 app.get('/test-recipes', async (req, res) => {
@@ -57,6 +58,41 @@ app.get('/test-recipes', async (req, res) => {
       error: error.message 
     });
   }
+
+// Debug endpoint to show all registered routes
+app.get('/api/debug/routes', (req, res) => {
+  // Get all registered routes
+  const routes = [];
+  app._router.stack.forEach(middleware => {
+    if (middleware.route) {
+      // Routes registered directly on the app
+      routes.push({
+        path: middleware.route.path,
+        methods: Object.keys(middleware.route.methods)
+      });
+    } else if (middleware.name === 'router') {
+      // Router middleware
+      middleware.handle.stack.forEach(handler => {
+        if (handler.route) {
+          routes.push({
+            path: handler.route.path,
+            methods: Object.keys(handler.route.methods),
+            baseUrl: middleware.regexp.toString()
+          });
+        }
+      });
+    }
+  });
+  
+  res.status(200).json({
+    routes: routes,
+    env: {
+      NODE_ENV: process.env.NODE_ENV,
+      PORT: PORT,
+      MONGODB_URI: process.env.MONGODB_URI ? 'Set (hidden)' : 'Not set'
+    }
+  });
+
 });
 
 // Error handling middleware

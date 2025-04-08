@@ -27,6 +27,7 @@ const MealPlanModal = ({ mealPlan, onClose }) => {
     }, [mealPlan]);
 
     // Group meals by day
+    /*
     const mealsByDay = mealPlan?.comidas?.reduce((acc, meal) => {
         if (!acc[meal.dia]) {
             acc[meal.dia] = [];
@@ -34,6 +35,7 @@ const MealPlanModal = ({ mealPlan, onClose }) => {
         acc[meal.dia].push(meal);
         return acc;
     }, {});
+    */
 
     if (!mealPlan) return null;
 
