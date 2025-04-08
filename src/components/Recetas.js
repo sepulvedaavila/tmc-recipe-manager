@@ -11,7 +11,10 @@ const Recipes = () => {
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
-        const response = await fetch('./api/recipes');
+        // Use absolute URL with window.location.origin to ensure correct API endpoint
+        const apiUrl = `${window.location.origin}/api/recipes`;
+        console.log('Fetching recipes from:', apiUrl);
+        const response = await fetch(apiUrl);
         if (!response.ok) throw new Error('Failed to fetch recipes');
         const data = await response.json();
         

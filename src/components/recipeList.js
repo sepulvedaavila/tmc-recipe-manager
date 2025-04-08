@@ -25,7 +25,10 @@ const RecipeList = () => {
     const fetchRecipes = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('/api/recipes');
+        // Use absolute URL with window.location.origin to ensure correct API endpoint
+        const apiUrl = `${window.location.origin}/api/recipes`;
+        console.log('Fetching recipes from:', apiUrl);
+        const response = await axios.get(apiUrl);
         console.log('Recipe API response:', response.data);
         
         // Handle both formats - either direct array or wrapped in recipeResult
