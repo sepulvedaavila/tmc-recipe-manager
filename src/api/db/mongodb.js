@@ -6,6 +6,7 @@ require('dotenv').config();
 // They should only come from environment variables.
 const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/recipeplan';
 
+
 // Track connection state
 let dbConnection = null;
 let isConnecting = false;
