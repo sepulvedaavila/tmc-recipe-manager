@@ -1,105 +1,74 @@
 const Receta = require('../models/Receta');
+const mongoose = require('mongoose');
 
 // Get all recipes with optional filters
 exports.getAll = async (req, res) => {
   try {
-    const { 
-      search, 
-      sort = 'nombre:asc', 
-      dishTypes, 
-      minPortions, 
-      maxPortions, 
-      hasIngredients,
-      limit = 100,
-      page = 1
-    } = req.query;
+    // Build the MongoDB query
+    const query = {
+      $lookup: {
+        from: "ingredientes",
+        localField: "idReceta",
+        foreignField: "idReceta",
+        as: "ingredientes"
+      }
+    };
 
-    // Build query
-    const query = {};
+    // Execute query with explicit await and proper error handling
+    console.log('MongoDB Query:', JSON.stringify(query));
+    
+    // Execute the query
+    //const recetas = await Receta.find({query});
+    const recetas = await Receta.aggregate([
+      {
+        $lookup: {
+          from: "ingredientes",
+          localField: "idReceta",
+          foreignField: "idReceta",
+          as: "ingredientes"
+        }
+      }
+    ]);
+    console.log(recetas);
 
-    // Text search filter
-    if (search) {
-      query.$or = [
-        { nombre: { $regex: search, $options: 'i' } },
-        { descripcion: { $regex: search, $options: 'i' } }
-      ];
-    }
+    // Get total count for pagination info
+    //const total = await Receta.countDocuments(query);
 
-    // Dish type filter
-    if (dishTypes) {
-      const types = dishTypes.split(',');
-      query.tipoPlatillo = { $in: types };
-    }
+    //console.log(`Found ${recetas.length} recipes out of ${total} total`);
+    
+    // Format response to match what the frontend expects
+    const formattedRecetas = recetas.map(recipe => ({
+      recipe_id: recipe._id,
+      nombre: recipe.nombre,
+      fuente: recipe.fuente || '',
+      racion: recipe.racion,
+      tipo_platillo: recipe.tipoPlatillo,
+      descripcion: recipe.descripcion,
+      tags: recipe.tags || [],
+      ingredientes: (recipe.ingredientes || []).map(ing => ({
+        ingrediente: ing.ingrediente || 'Unknown',
+        unidad: ing.unidad || '',
+        por_persona: ing.por_persona || 0,
+        cantidad_total: ing.cantidad_total || 0
+      }))
+    }));
 
-    // Portion range filter
-    if (minPortions || maxPortions) {
-      query.racion = {};
-      if (minPortions) query.racion.$gte = parseInt(minPortions);
-      if (maxPortions) query.racion.$lte = parseInt(maxPortions);
-    }
-
-    // Complete ingredients filter
-    if (hasIngredients === 'true') {
-      query['ingredientes.0'] = { $exists: true };
-    }
-
-    // Build sort object
-    let sortObj = { nombre: 1 }; // Default ascending by name
-    if (sort) {
-      const [sortField, sortDirection] = sort.split(':');
-      sortObj = { [sortField]: sortDirection === 'desc' ? -1 : 1 };
-    }
-
-    // Pagination
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-    const limitNum = parseInt(limit);
-
-    // Execute query
-    const recetas = await Receta.find(query)
-      .sort(sortObj)
-      .skip(skip)
-      .limit(limitNum);
-
-    // Get total count for pagination
-    const total = await Receta.countDocuments(query);
-
-    // Format response for frontend
-    const formattedRecetas = recetas.map(receta => {
-      const recipeObj = receta.toObject();
-      return {
-        recipe_id: recipeObj._id,
-        nombre: recipeObj.nombre,
-        fuente: recipeObj.fuente || '',
-        racion: recipeObj.racion,
-        tipo_platillo: recipeObj.tipoPlatillo,
-        descripcion: recipeObj.descripcion,
-        tags: recipeObj.tags || [],
-        ingredientes: (recipeObj.ingredientes || []).map(ing => ({
-          ingrediente: ing.ingrediente || 'Unknown',
-          unidad: ing.unidad || '',
-          por_persona: parseFloat(ing.por_persona) || 0,
-          cantidad_total: parseFloat(ing.cantidad_total) || 0
-        }))
-      };
-    });
-
-    console.log(`Found ${formattedRecetas.length} recipes`);
-
-    // Return in format compatible with frontend
+    // Return in the format expected by the frontend
     return res.status(200).json({ 
       recipeResult: formattedRecetas,
       pagination: {
-        total,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        pages: Math.ceil(total / parseInt(limit))
+        //total,
+        //page: parseInt(page),
+        //limit: parseInt(limit),
+        //pages: Math.ceil(total / parseInt(limit))
       }
     });
   } catch (error) {
-    console.error('Error fetching recipes:', error);
-    return res.status(500).json({
+    console.error('Error retrieving recipes:', error);
+    return res.status(500).json({ 
+      success: false, 
       message: 'Error al obtener las recetas',
-      error: process.env.NODE_ENV === 'development' ? error.message : 'Server error'
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
     });
   }
 };
@@ -109,11 +78,24 @@ exports.getById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const receta = await Receta.findById(id);
+    // Check if the ID is a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      console.warn(`Invalid MongoDB ID format: ${id}`);
+      return res.status(400).json({ 
+        message: 'ID de receta inválido',
+        error: 'Invalid MongoDB ID format'
+      });
+    }
+
+    // Use findById with error handling
+    const receta = await Receta.findById(id).lean();
 
     if (!receta) {
+      console.warn(`Recipe not found with ID: ${id}`);
       return res.status(404).json({ message: 'Receta no encontrada' });
     }
+
+    console.log(`Recipe found: ${receta.nombre}`);
 
     // Format response
     const formattedReceta = {
@@ -146,15 +128,40 @@ exports.getById = async (req, res) => {
 exports.create = async (req, res) => {
   try {
     const receta = req.body;
-    console.log('Creating new recipe:', receta);
+    console.log('Creating new recipe:', JSON.stringify(receta));
+
+    // Validate required fields
+    if (!receta.titulo && !receta.nombre) {
+      return res.status(400).json({ 
+        message: 'Nombre de receta requerido',
+        error: 'Missing required field: nombre/titulo'
+      });
+    }
+
+    if (!receta.tipoPlatillo) {
+      return res.status(400).json({ 
+        message: 'Tipo de platillo requerido',
+        error: 'Missing required field: tipoPlatillo'
+      });
+    }
+
+    if (!receta.descripcion) {
+      return res.status(400).json({ 
+        message: 'Descripción requerida',
+        error: 'Missing required field: descripcion'
+      });
+    }
 
     // Prepare ingredients with per-person calculations
-    const ingredientes = receta.ingredientes.map(ing => ({
-      ingrediente: ing.ingrediente,
-      unidad: ing.unidad || '',
-      por_persona: ing.cantidad / receta.racion, // Calculate "por_persona"
-      cantidad_total: ing.cantidad
-    }));
+    const ingredientes = Array.isArray(receta.ingredientes) 
+      ? receta.ingredientes.map(ing => ({
+          ingrediente: ing.ingrediente,
+          unidad: ing.unidad || '',
+          // Use the correct field names that match your collection
+          por_persona: ing.cantidad / (receta.racion || 4),
+          cantidad_total: ing.cantidad
+        }))
+      : [];
 
     // Create new recipe document
     const newReceta = new Receta({
@@ -167,15 +174,22 @@ exports.create = async (req, res) => {
       ingredientes: ingredientes
     });
 
-    // Save to MongoDB
-    const savedReceta = await newReceta.save();
-
-    console.log('Recipe created:', savedReceta._id);
-    
-    return res.status(201).json({ 
-      message: 'Receta guardada con éxito!',
-      recipeId: savedReceta._id 
-    });
+    // Save to MongoDB with explicit error handling
+    try {
+      const savedReceta = await newReceta.save();
+      console.log('Recipe created successfully:', savedReceta._id);
+      
+      return res.status(201).json({ 
+        message: 'Receta guardada con éxito!',
+        recipeId: savedReceta._id 
+      });
+    } catch (saveError) {
+      console.error('Error saving to MongoDB:', saveError);
+      return res.status(500).json({
+        message: 'Error al guardar la receta en la base de datos',
+        error: process.env.NODE_ENV === 'development' ? saveError.message : 'Database error'
+      });
+    }
   } catch (error) {
     console.error('Error creating recipe:', error);
     return res.status(500).json({

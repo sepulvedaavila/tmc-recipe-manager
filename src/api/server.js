@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
-const connectDB = require('./config/database');
+// Use the correct path for the database connection
+const { connectDB, getConnectionStatus } = require('./db/mongodb');
 const errorHandler = require('./middleware/errorHandler');
 const requestLogger = require('./middleware/requestLogger');
 
@@ -14,7 +15,14 @@ const planRecetasRoutes = require('./routes/planRecetas');
 const app = express();
 
 // Connect to MongoDB
-connectDB();
+(async () => {
+  try {
+    await connectDB();
+    console.log('MongoDB connection initialized in server.js');
+  } catch (err) {
+    console.error('Failed to connect to MongoDB in server.js:', err);
+  }
+})();
 
 // Configure CORS
 app.use(cors({
@@ -52,22 +60,61 @@ app.get('/api/health', (req, res) => {
 // Diagnostic endpoint for debugging
 app.get('/api/debug', async (req, res) => {
   try {
-    // Check MongoDB connection
-    const mongoose = require('mongoose');
-    const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+    // Check MongoDB connection using our helper function
+    const connectionStatus = getConnectionStatus();
     
     // Get collection information
     const collections = {};
-    if (dbStatus === 'connected') {
-      const Receta = require('./models/Receta');
-      const Plan = require('./models/Plan');
-      const Cliente = require('./models/Cliente');
-      const PlanReceta = require('./models/PlanReceta');
+    if (connectionStatus.readyState === 1) {
+      try {
+        const Receta = require('./models/Receta');
+        collections.recipes = await Receta.countDocuments();
+        // Sample a recipe to verify schema connection
+        const sampleRecipe = await Receta.findOne().lean();
+        collections.sampleRecipeFields = sampleRecipe 
+          ? Object.keys(sampleRecipe)
+          : [];
+      } catch (err) {
+        console.error('Error counting recipes:', err);
+        collections.recipesError = err.message;
+      }
       
-      collections.recipes = await Receta.countDocuments();
-      collections.plans = await Plan.countDocuments();
-      collections.clients = await Cliente.countDocuments();
-      collections.planRecipes = await PlanReceta.countDocuments();
+      try {
+        const Plan = require('./models/Plan');
+        collections.plans = await Plan.countDocuments();
+      } catch (err) {
+        console.error('Error counting plans:', err);
+        collections.plansError = err.message;
+      }
+      
+      try {
+        const Cliente = require('./models/Cliente');
+        collections.clients = await Cliente.countDocuments();
+      } catch (err) {
+        console.error('Error counting clients:', err);
+        collections.clientsError = err.message;
+      }
+      
+      try {
+        const PlanReceta = require('./models/PlanReceta');
+        collections.planRecipes = await PlanReceta.countDocuments();
+      } catch (err) {
+        console.error('Error counting plan recipes:', err);
+        collections.planRecipesError = err.message;
+      }
+    }
+    
+    // Get detailed MongoDB info
+    let detailedDbInfo = {};
+    try {
+      const mongoose = require('mongoose');
+      if (mongoose.connection.db) {
+        // Get database stats
+        detailedDbInfo = await mongoose.connection.db.stats();
+      }
+    } catch (err) {
+      console.error('Error getting DB stats:', err);
+      detailedDbInfo = { error: err.message };
     }
     
     res.status(200).json({
@@ -77,9 +124,10 @@ app.get('/api/debug', async (req, res) => {
         timestamp: new Date().toISOString()
       },
       database: {
-        status: dbStatus,
+        connection: connectionStatus,
         mongodb_uri: process.env.MONGODB_URI ? '***set***' : 'not set',
-        collections
+        collections,
+        stats: detailedDbInfo
       },
       system: {
         platform: process.platform,
@@ -89,7 +137,41 @@ app.get('/api/debug', async (req, res) => {
     });
   } catch (error) {
     console.error('Error in debug endpoint:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ 
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined 
+    });
+  }
+});
+
+// Add a specific recipes diagnostic endpoint
+app.get('/api/recipes-debug', async (req, res) => {
+  try {
+    const Receta = require('./models/Receta');
+    
+    // Attempt to get total count
+    const count = await Receta.countDocuments();
+    
+    // Get sample recipes to verify structure
+    const sampleRecipes = await Receta.find().limit(2).lean();
+    
+    // Get collection info
+    const mongoose = require('mongoose');
+    const collectionInfo = await mongoose.connection.db
+      .collection('recetas')
+      .stats();
+    
+    res.status(200).json({
+      total_recipes: count,
+      sample_recipes: sampleRecipes,
+      collection_info: collectionInfo
+    });
+  } catch (error) {
+    console.error('Error in recipes debug endpoint:', error);
+    res.status(500).json({ 
+      message: 'Error accessing recipes',
+      error: error.message
+    });
   }
 });
 
@@ -102,7 +184,7 @@ app.use('*', (req, res) => {
 app.use(errorHandler);
 
 // Start the server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`API available at http://localhost:${PORT}/api`);
