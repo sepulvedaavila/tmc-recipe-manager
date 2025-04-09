@@ -184,7 +184,7 @@ app.use('*', (req, res) => {
 app.use(errorHandler);
 
 // Start the server
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 3001;
 const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`API available at http://localhost:${PORT}/api`);
