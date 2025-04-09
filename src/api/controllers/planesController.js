@@ -1,6 +1,7 @@
 const Plan = require('../models/Plan');
 const PlanReceta = require('../models/PlanReceta');
 const Receta = require('../models/Receta');
+const mongoose = require('mongoose');
 
 // Get all plans
 exports.getAll = async (req, res) => {

@@ -1,6 +1,7 @@
 const PlanReceta = require('../models/PlanReceta');
 const Plan = require('../models/Plan');
 const Receta = require('../models/Receta');
+const mongoose = require('mongoose');
 
 // Get all recipe assignments for a plan
 exports.getByPlanId = async (req, res) => {
