@@ -26,7 +26,7 @@ const app = express();
 
 // Configure CORS - essential for Vercel deployment
 app.use(cors({
-  origin: '*', // Allow any origin for API access
+  origin: '/{*any}', // Allow any origin for API access
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   credentials: true,
@@ -34,7 +34,7 @@ app.use(cors({
 }));
 
 // Handle OPTIONS requests for preflight explicitly - critical for browser API calls
-app.options('*', cors());
+app.options('/{*any}', cors());
 
 // Request parsing middleware
 app.use(express.json({ limit: '10mb' }));
