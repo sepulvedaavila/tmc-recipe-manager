@@ -24,20 +24,31 @@ const app = express();
   }
 })();
 
-// Configure CORS
+// Configure CORS - essential for Vercel deployment
 app.use(cors({
-  origin: '/{*any}', // In production, restrict to specific domains
+  origin: '*', // Allow any origin for API access
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true,
+  maxAge: 86400 // 24 hours CORS cache
 }));
 
-// Handle OPTIONS requests for preflight
-app.options('/{*any}', cors());
+// Handle OPTIONS requests for preflight explicitly - critical for browser API calls
+app.options('*', cors());
 
 // Request parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Middleware to help debug API requests, especially in Vercel
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  // For Vercel, check request headers that might be important
+  console.log('Origin:', req.get('origin'));
+  console.log('Host:', req.get('host'));
+  // Continue processing
+  next();
+});
 
 // Request logging
 app.use(requestLogger);
