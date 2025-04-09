@@ -1,11 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const { getRecipes, postRecipe } = require('../controllers/recetas.mongodb');
+const recetasController = require('../controllers/recetasController');
 
-// Get all recipes with optional filters
-router.get('/', getRecipes);
+// GET /api/recipes - Get all recipes with optional filters
+router.get('/', recetasController.getAll);
 
-// Create a new recipe
-router.post('/', postRecipe);
+// GET /api/recipes/:id - Get recipe by ID
+router.get('/:id', recetasController.getById);
 
-module.exports = router; 
+// POST /api/recipes - Create a new recipe
+router.post('/', recetasController.create);
+
+// PUT /api/recipes/:id - Update a recipe
+router.put('/:id', recetasController.update);
+
+// DELETE /api/recipes/:id - Delete a recipe
+router.delete('/:id', recetasController.delete);
+
+module.exports = router;

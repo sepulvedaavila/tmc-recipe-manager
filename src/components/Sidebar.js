@@ -1,6 +1,6 @@
 // src/components/Sidebar.js
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { FiBook, FiCalendar, FiPlusCircle, FiHome, FiFilePlus, FiList, FiSettings } from 'react-icons/fi';
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {

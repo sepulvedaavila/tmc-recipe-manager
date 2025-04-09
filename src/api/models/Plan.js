@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const planSchema = new mongoose.Schema({
   cliente: {
     type: Number,
-    required: true
+required: true,
+    index: true
   },
   racion: {
     type: Number,
@@ -11,16 +12,31 @@ const planSchema = new mongoose.Schema({
     default: 4
   },
   idPlan: {
-    type: Number
+type: Number,
+    sparse: true
   },
   nombrePlan: {
     type: String,
-    required: true
+    required: true,
+    index: true
   },
   fechaCreacion: {
     type: Date,
     default: Date.now
+},
+  updatedAt: {
+    type: Date,
+    default: Date.now
   }
+}, {
+  timestamps: true,
+  versionKey: false
 });
 
-module.exports = mongoose.model('Plan', planSchema, 'planes'); 
+// Pre-save hook to update the updatedAt field
+planSchema.pre('save', function(next) {
+  this.updatedAt = Date.now();
+  next();
+});
+
+module.exports = mongoose.model('Plan', planSchema, 'planes');

@@ -1,34 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const { 
-    getPlanes, 
-    getPlanById, 
-    createPlan, 
-    updatePlan, 
-    deletePlan,
-    addRecipeToPlan,
-    removeRecipeFromPlan
-} = require('../controllers/planes.mongodb');
+const planesController = require('../controllers/planesController');
 
-// Get all plans
-router.get('/', getPlanes);
+// GET /api/planes - Get all plans
+router.get('/', planesController.getAll);
 
-// Get a specific plan by ID
-router.get('/:id', getPlanById);
+// GET /api/planes/:id - Get plan by ID with recipes
+router.get('/:id', planesController.getById);
 
-// Create a new plan
-router.post('/', createPlan);
+// POST /api/planes - Create a new plan
+router.post('/', planesController.create);
 
-// Update a plan
-router.put('/:id', updatePlan);
+// PUT /api/planes/:id - Update a plan
+router.put('/:id', planesController.update);
 
-// Delete a plan
-router.delete('/:id', deletePlan);
+// DELETE /api/planes/:id - Delete a plan and its recipes
+router.delete('/:id', planesController.delete);
 
-// Add recipe to plan
-router.post('/:planId/recipes/:recipeId', addRecipeToPlan);
-
-// Remove recipe from plan
-router.delete('/:planId/recipes/:recipeId', removeRecipeFromPlan);
-
-module.exports = router; 
+module.exports = router;

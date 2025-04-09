@@ -1,113 +1,201 @@
 const express = require('express');
 const cors = require('cors');
-const connectDB = require('./db/mongodb');
+// Use the correct path for the database connection
+const { connectDB, getConnectionStatus } = require('./db/mongodb');
+const errorHandler = require('./middleware/errorHandler');
+const requestLogger = require('./middleware/requestLogger');
+
+// Import routes
 const recetasRoutes = require('./routes/recetas');
 const planesRoutes = require('./routes/planes');
 const clientesRoutes = require('./routes/clientes');
-const mealPlansRoutes = require('./routes/mealplans');
 const planRecetasRoutes = require('./routes/planRecetas');
 
-// Initialize express
+// Initialize express app
 const app = express();
 
 // Connect to MongoDB
-connectDB();
+(async () => {
+  try {
+    await connectDB();
+    console.log('MongoDB connection initialized in server.js');
+  } catch (err) {
+    console.error('Failed to connect to MongoDB in server.js:', err);
+  }
+})();
 
-// Middleware
-// Configure CORS to allow requests from any origin
+// Configure CORS
 app.use(cors({
-  origin: '*', // Allow any origin for API access
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: '/{*any}', // In production, restrict to specific domains
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 }));
 
-// Handle preflight requests
-app.options('*', cors());
+// Handle OPTIONS requests for preflight
+app.options('/{*any}', cors());
 
-// Parse JSON request bodies
-app.use(express.json());
+// Request parsing middleware
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Routes
+// Request logging
+app.use(requestLogger);
+
+// API Routes
 app.use('/api/recipes', recetasRoutes);
 app.use('/api/planes', planesRoutes);
 app.use('/api/clientes', clientesRoutes);
-app.use('/api/mealplans', mealPlansRoutes);
 app.use('/api/plan-recetas', planRecetasRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'OK', message: 'API is running' });
+  res.status(200).json({ 
+    status: 'OK', 
+    message: 'API is running',
+    timestamp: new Date().toISOString()
+  });
 });
 
-
-// Explicit recipes endpoint for testing
-app.get('/test-recipes', async (req, res) => {
+// Diagnostic endpoint for debugging
+app.get('/api/debug', async (req, res) => {
   try {
-    const Receta = require('./models/Receta');
-    const recipeResult = await Receta.find({}).limit(10);
-    const count = await Receta.countDocuments();
+    // Check MongoDB connection using our helper function
+    const connectionStatus = getConnectionStatus();
     
-    res.status(200).json({ 
-      message: 'Test recipes endpoint',
-      count,
-      recipeResult: recipeResult.map(r => r.toObject()) 
+    // Get collection information
+    const collections = {};
+    if (connectionStatus.readyState === 1) {
+      try {
+        const Receta = require('./models/Receta');
+        collections.recipes = await Receta.countDocuments();
+        // Sample a recipe to verify schema connection
+        const sampleRecipe = await Receta.findOne().lean();
+        collections.sampleRecipeFields = sampleRecipe 
+          ? Object.keys(sampleRecipe)
+          : [];
+      } catch (err) {
+        console.error('Error counting recipes:', err);
+        collections.recipesError = err.message;
+      }
+      
+      try {
+        const Plan = require('./models/Plan');
+        collections.plans = await Plan.countDocuments();
+      } catch (err) {
+        console.error('Error counting plans:', err);
+        collections.plansError = err.message;
+      }
+      
+      try {
+        const Cliente = require('./models/Cliente');
+        collections.clients = await Cliente.countDocuments();
+      } catch (err) {
+        console.error('Error counting clients:', err);
+        collections.clientsError = err.message;
+      }
+      
+      try {
+        const PlanReceta = require('./models/PlanReceta');
+        collections.planRecipes = await PlanReceta.countDocuments();
+      } catch (err) {
+        console.error('Error counting plan recipes:', err);
+        collections.planRecipesError = err.message;
+      }
+    }
+    
+    // Get detailed MongoDB info
+    let detailedDbInfo = {};
+    try {
+      const mongoose = require('mongoose');
+      if (mongoose.connection.db) {
+        // Get database stats
+        detailedDbInfo = await mongoose.connection.db.stats();
+      }
+    } catch (err) {
+      console.error('Error getting DB stats:', err);
+      detailedDbInfo = { error: err.message };
+    }
+    
+    res.status(200).json({
+      api: {
+        status: 'running',
+        environment: process.env.NODE_ENV || 'development',
+        timestamp: new Date().toISOString()
+      },
+      database: {
+        connection: connectionStatus,
+        mongodb_uri: process.env.MONGODB_URI ? '***set***' : 'not set',
+        collections,
+        stats: detailedDbInfo
+      },
+      system: {
+        platform: process.platform,
+        node_version: process.version,
+        uptime: process.uptime()
+      }
     });
   } catch (error) {
+    console.error('Error in debug endpoint:', error);
     res.status(500).json({ 
-      message: 'Error in test recipes endpoint', 
-      error: error.message 
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined 
     });
   }
-
-// Debug endpoint to show all registered routes
-app.get('/api/debug/routes', (req, res) => {
-  // Get all registered routes
-  const routes = [];
-  app._router.stack.forEach(middleware => {
-    if (middleware.route) {
-      // Routes registered directly on the app
-      routes.push({
-        path: middleware.route.path,
-        methods: Object.keys(middleware.route.methods)
-      });
-    } else if (middleware.name === 'router') {
-      // Router middleware
-      middleware.handle.stack.forEach(handler => {
-        if (handler.route) {
-          routes.push({
-            path: handler.route.path,
-            methods: Object.keys(handler.route.methods),
-            baseUrl: middleware.regexp.toString()
-          });
-        }
-      });
-    }
-  });
-  
-  res.status(200).json({
-    routes: routes,
-    env: {
-      NODE_ENV: process.env.NODE_ENV,
-      PORT: PORT,
-      MONGODB_URI: process.env.MONGODB_URI ? 'Set (hidden)' : 'Not set'
-    }
-  });
-
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
-    message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
-  });
+// Add a specific recipes diagnostic endpoint
+app.get('/api/recipes-debug', async (req, res) => {
+  try {
+    const Receta = require('./models/Receta');
+    
+    // Attempt to get total count
+    const count = await Receta.countDocuments();
+    
+    // Get sample recipes to verify structure
+    const sampleRecipes = await Receta.find().limit(2).lean();
+    
+    // Get collection info
+    const mongoose = require('mongoose');
+    const collectionInfo = await mongoose.connection.db
+      .collection('recetas')
+      .stats();
+    
+    res.status(200).json({
+      total_recipes: count,
+      sample_recipes: sampleRecipes,
+      collection_info: collectionInfo
+    });
+  } catch (error) {
+    console.error('Error in recipes debug endpoint:', error);
+    res.status(500).json({ 
+      message: 'Error accessing recipes',
+      error: error.message
+    });
+  }
 });
+
+// Catch all for undefined routes
+app.use('/{*any}', (req, res) => {
+  res.status(404).json({ message: 'Resource not found' });
+});
+
+// Global error handler
+app.use(errorHandler);
 
 // Start the server
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`API available at http://localhost:${PORT}/api`);
 });
 
+// Handle server shutdown gracefully
+process.on('SIGTERM', () => {
+  console.log('SIGTERM signal received: shutting down gracefully');
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
+});
 module.exports = app;
