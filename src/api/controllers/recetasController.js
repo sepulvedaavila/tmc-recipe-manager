@@ -48,8 +48,8 @@ exports.getAll = async (req, res) => {
       ingredientes: (recipe.ingredientes || []).map(ing => ({
         ingrediente: ing.ingrediente || 'Unknown',
         unidad: ing.unidad || '',
-        por_persona: ing.por_persona || 0,
-        cantidad_total: ing.cantidad_total || 0
+        por_persona: ing.porPersona || 0,
+        cantidad_total: ing.cantidadTotal || 0
       }))
     }));
 
@@ -109,8 +109,8 @@ exports.getById = async (req, res) => {
       ingredientes: (receta.ingredientes || []).map(ing => ({
         ingrediente: ing.ingrediente || 'Unknown',
         unidad: ing.unidad || '',
-        por_persona: parseFloat(ing.por_persona) || 0,
-        cantidad_total: parseFloat(ing.cantidad_total) || 0
+        por_persona: parseFloat(ing.porPersona) || 0,
+        cantidad_total: parseFloat(ing.cantidadTotal) || 0
       }))
     };
 

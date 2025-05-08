@@ -14,7 +14,7 @@ const MealPlanList = () => {
             try {
                 setLoading(true);
                 const [plansResponse, recipesResponse] = await Promise.all([
-                    fetch('/api/plans'),
+                    fetch('/api/planes'),
                     fetch('/api/recipes')
                 ]);
                 
@@ -23,16 +23,18 @@ const MealPlanList = () => {
                     recipesResponse.json()
                 ]);
 
+                console.log('Recipes Data:', recipesData);
+
                 // Create a map of recipes for quick lookup
-                const recipesMap = new Map(recipesData.map(recipe => [recipe.recipe_id, recipe]));
+                const recipesMap = new Map((recipesData.recipeResult || []).map(recipe => [recipe.recipe_id, recipe]));
 
                 // Enhance plans with full recipe details
-                const enhancedPlans = plansData.planResult.map(plan => {
+                const enhancedPlans = (plansData.planResult || []).map(plan => {
                     // Transform recetas array into comidas array with full recipe details
                     const comidas = plan.recetas.map(receta => ({
                         dia: receta.dia_semana,
                         tipo_comida: 'Comida', // Default value or you can map based on your needs
-                        receta: recipesMap.get(receta.id_soup) || recipesMap.get(receta.id_main) || recipesMap.get(receta.id_side)
+                        receta: recipesMap.get(receta.idSoup) || recipesMap.get(receta.idMain) || recipesMap.get(receta.idSide)
                     })).filter(comida => comida.receta); // Filter out meals without recipes
 
                     return {
